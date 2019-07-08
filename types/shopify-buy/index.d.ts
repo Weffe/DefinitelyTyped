@@ -140,6 +140,63 @@ declare namespace ShopifyBuy {
         helpers: ProductHelpers;
     }
 
+    export interface ProductQuery extends BaseQuery {
+        /**
+         * The key to sort results by. Available values are
+         * documented as {@link https://help.shopify.com/api/storefront-api/reference/enum/productsortkeys|Product Sort Keys}.
+         */
+        sortKey?: ProductSortKeys;
+    }
+
+    export enum ProductSortKeys {
+        /**
+         * Sort by the vendor value.
+         */
+        VENDOR = 'VENDOR',
+
+        /**
+         * Sort by the created_at value.
+         */
+        CREATED_AT = 'CREATED_AT',
+
+        /**
+         * Sort by the id value.
+         */
+        ID = 'ID',
+
+        /**
+         * Sort by the price value.
+         */
+        PRICE = 'PRICE',
+
+        /**
+         * Sort by the product_type value.
+         */
+        PRODUCT_TYPE = 'PRODUCT_TYPE',
+
+        /**
+         * During a search (i.e. when the query parameter has been specified on the connection)
+         * this sorts the results by relevance to the search term(s). When no search query
+         * is specified, this sort key is not deterministic and should not be used.
+         */
+        RELEVANCE = 'RELEVANCE',
+
+        /**
+         * Sort by the title value.
+         */
+        TITLE = 'TITLE',
+
+        /**
+         * Sort by the updated_at value.
+         */
+        UPDATED_AT = 'UPDATED_AT',
+
+        /**
+         * Sort by the best_selling value.
+         */
+        BEST_SELLING = 'BEST_SELLING',
+    }
+
     export interface ProductHelpers {
         /**
          * Returns the variant of a product corresponding to the options given.
@@ -154,32 +211,6 @@ declare namespace ShopifyBuy {
          * @param options An object containing the options for the variant.
          */
         variantForOptions(product: Product, options: object): ProductVariant;
-    }
-
-    /**
-     * An object specifying the query data
-     */
-    export interface Query {
-        /**
-         * The relay `first` param. This specifies page size.
-         */
-        first?: number;
-
-        /**
-         * The key to sort results by. Available values are
-         *  documented as {@link https://help.shopify.com/api/storefront-api/reference/enum/productsortkeys|Product Sort Keys}.
-         */
-        sortKey?: string;
-
-        /**
-         * A query string. See full documentation {@link https://help.shopify.com/api/storefront-api/reference/object/shop#products|here}
-         */
-        query?: string;
-
-        /**
-         * Whether or not to reverse the sort order of the results
-         */
-        reverse?: boolean;
     }
 
     /**
@@ -421,7 +452,7 @@ declare namespace ShopifyBuy {
          *   // Do something with the first 10 collections sorted by title in ascending order
          * });
          */
-        fetchQuery(query: Query): Promise<Collection[]>;
+        fetchQuery(query: CollectionQuery): Promise<Collection[]>;
     }
 
     /**
@@ -458,6 +489,40 @@ declare namespace ShopifyBuy {
          */
         image: Pick<Image, 'id' | 'src' | 'altText'> | null;
     }
+
+    export interface CollectionQuery extends BaseQuery {
+        /**
+         * The key to sort results by. Available values are
+         * documented as {@link https://help.shopify.com/api/storefront-api/reference/enum/collectionsortkeys|Collection Sort Keys}.
+         */
+        sortKey?: CollectionSortKeys;
+    }
+
+    export enum CollectionSortKeys {
+        /**
+         * Sort by the id value.
+         */
+        ID = 'ID',
+
+        /**
+         * During a search (i.e. when the query parameter has been specified
+         * on the connection) this sorts the results by relevance to the search term(s).
+         * When no search query is specified, this sort key is not deterministic and
+         * should not be used.
+         */
+        RELEVANCE = 'RELEVANCE',
+
+        /**
+         * Sort by the title value.
+         */
+        TITLE = 'TITLE',
+
+        /**
+         * Sort by the updated_at value.
+         */
+        UPDATED_AT = 'UPDATED_AT',
+    }
+
     //#endregion CollectionResource and friends
 
     //#region CheckoutResource and friends
@@ -1406,6 +1471,26 @@ declare namespace ShopifyBuy {
          * Otherwise any transformations which an image type does not support will be ignored.
          */
         transformedSrc: string;
+    }
+
+    /**
+     * An object specifying the query data
+     */
+    export interface BaseQuery {
+        /**
+         * The relay `first` param. This specifies page size.
+         */
+        first?: number;
+
+        /**
+         * A query string.
+         */
+        query?: string;
+
+        /**
+         * Whether or not to reverse the sort order of the results
+         */
+        reverse?: boolean;
     }
 
     /**

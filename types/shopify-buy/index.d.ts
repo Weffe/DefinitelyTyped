@@ -7,6 +7,15 @@
 //                 Rogelio Negrete <https://github.com/weffe>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.7
+// Types verified against Shopify API Reference version: 2019-07
+
+// Important Note:
+// The true shape of certain resources/responses can be found in the
+// js-buy-sdk graphql's query files. Just because the online API reference has
+// certain properties does NOT mean that they are queried in the graphql request
+// that the js-buy-sdk client issues. So don't be confused or alarmed if certain
+// properties are missing according to the online API docs as they are just not
+// queried in the actual client graphql query.
 
 /**
  * The JS Buy SDK is a lightweight library that allows you to build ecommerce into any website.
@@ -16,11 +25,8 @@
  * website or javascript application. This is helpful if you already have a website and need to add ecommerce
  * or only need a simple buy button on your site.
  */
-
-// TODO: Make sure props are null or not
 declare namespace ShopifyBuy {
-    //
-    // Top Level API
+    //#region Top Level API
     // ----------------------------------------------------------------------
     // Client
     export class Client {
@@ -75,8 +81,10 @@ declare namespace ShopifyBuy {
          */
         storefrontAccessToken: string;
     }
+    //#endregion Top Level API
 
-    // Product
+    //#region ProductResource and friends
+    // ----------------------------------------------------------------------
     export class ProductResource {
         /**
          * Fetches a single product by ID on the shop.
@@ -148,7 +156,210 @@ declare namespace ShopifyBuy {
         variantForOptions(product: Product, options: object): ProductVariant;
     }
 
-    // Collection
+    /**
+     * An object specifying the query data
+     */
+    export interface Query {
+        /**
+         * The relay `first` param. This specifies page size.
+         */
+        first?: number;
+
+        /**
+         * The key to sort results by. Available values are
+         *  documented as {@link https://help.shopify.com/api/storefront-api/reference/enum/productsortkeys|Product Sort Keys}.
+         */
+        sortKey?: string;
+
+        /**
+         * A query string. See full documentation {@link https://help.shopify.com/api/storefront-api/reference/object/shop#products|here}
+         */
+        query?: string;
+
+        /**
+         * Whether or not to reverse the sort order of the results
+         */
+        reverse?: boolean;
+    }
+
+    /**
+     * @see https://help.shopify.com/en/api/storefront-api/reference/object/product
+     */
+    export interface Product extends Node {
+        /**
+         * Whether the product is available on the Online Store channel and in stock.
+         */
+        availableForSale: boolean;
+
+        /**
+         * The date and time when the product was created.
+         */
+        createdAt: string;
+
+        /**
+         * The date and time when the product was last modified.
+         */
+        updatedAt: string;
+
+        /**
+         * The description of the product, complete with HTML formatting.
+         */
+        descriptionHtml: string;
+
+        /**
+         * Stripped description of the product, single line with HTML tags removed.
+         */
+        description: string;
+
+        /**
+         * A human-friendly unique string for the Product automatically generated from its title.
+         * They are used by the Liquid templating language to refer to objects.
+         */
+        handle: string;
+
+        /**
+         * A categorization that a product can be tagged with, commonly used for filtering and searching.
+         */
+        productType: string;
+
+        /**
+         * The product’s title.
+         */
+        title: string;
+
+        /**
+         * The product’s vendor name.
+         */
+        vendor: string;
+
+        /**
+         * The date and time when the product was published to the channel.
+         */
+        publishedAt: string;
+
+        /**
+         * The online store URL for the product. A value of null indicates that the product is not published to the Online Store sales channel.
+         */
+        onlineStoreUrl: URL | null;
+
+        /**
+         * List of custom product options (maximum of 3 per product).
+         */
+        options: ProductOption[];
+
+        /**
+         * List of images associated with the product.
+         */
+        images: ImageConnection;
+
+        /**
+         * List of collections a product belongs to.
+         */
+        variants: ProductVariantConnection;
+    }
+
+    type ImageConnectionEdge = EdgeWithCursor<Pick<Image, 'id' | 'src' | 'altText'>>;
+    export interface ImageConnection extends BaseConnection<ImageConnectionEdge> {}
+
+    type ProductVariantConnectionEdge = EdgeWithCursor<ProductVariant>;
+    export interface ProductVariantConnection extends BaseConnection<ProductVariantConnectionEdge> {}
+
+    /**
+     * @see https://help.shopify.com/en/api/storefront-api/reference/object/productvariant
+     */
+    export interface ProductVariant extends Node {
+        /**
+         * The product variant’s title.
+         */
+        title: string;
+
+        /**
+         * The product variant’s price.
+         */
+        price: Money; // needs update to v2
+
+        /**
+         * List of prices and compare-at prices in the presentment currencies for this shop.
+         */
+        presentmentPrices: ProductVariantPricePairConnection;
+
+        /**
+         * The weight of the product variant in the unit system specified with weightUnit.
+         */
+        weight: number | null;
+
+        /**
+         * The SKU (stock keeping unit) associated with the variant.
+         */
+        sku: string | null;
+
+        /**
+         * Indicates if the product variant is available for sale.
+         */
+        available: boolean;
+
+        /**
+         * The compare at price of the variant.
+         * This can be used to mark a variant as on sale, when compareAtPriceV2 is higher than priceV2.
+         */
+        compareAtPrice: Money; // needs update to v2
+
+        /**
+         * Image associated with the product variant. This field falls back to the product image if no image is available.
+         */
+        image: Pick<Image, 'id' | 'src' | 'altText'> | null;
+
+        /**
+         * List of product options applied to the variant.
+         */
+        selectedOptions: SelectedOption[];
+    }
+
+    type ProductVariantPricePairConnectionEdge = Edge<{ price: ProductVariantPricePair }>;
+    export interface ProductVariantPricePairConnection extends BaseConnection<ProductVariantPricePairConnectionEdge> {}
+
+    /**
+     * @see https://help.shopify.com/en/api/storefront-api/reference/object/productvariantpricepair
+     */
+    export interface ProductVariantPricePair {
+        compareAtPrice: MoneyV2;
+        price: MoneyV2;
+    }
+
+    /**
+     * @see https://help.shopify.com/en/api/storefront-api/reference/object/selectedoption
+     */
+    export interface SelectedOption {
+        /**
+         * The product option’s name.
+         */
+
+        name: string;
+
+        /**
+         * The product option’s value.
+         */
+        value: string;
+    }
+
+    /**
+     * @see https://help.shopify.com/en/api/storefront-api/reference/object/productoption
+     */
+    export interface ProductOption extends Node {
+        /**
+         * name of option (ex. "Size", "Color")
+         */
+        name: string;
+
+        /**
+         * The corresponding value to the product option name.
+         */
+        values: Array<string>;
+    }
+    //#endregion ProductResource and friends
+
+    //#region CollectionResource and friends
+    // ----------------------------------------------------------------------
     export class CollectionResource {
         /**
          * Fetches a single collection by ID on the shop, not including products.
@@ -210,471 +421,9 @@ declare namespace ShopifyBuy {
          *   // Do something with the first 10 collections sorted by title in ascending order
          * });
          */
-        fetchQuery(query: Query): Promise<Collection[]>; // TODO fix to be a type: DOC: Fetches a collection by handle on the shop. Assuming it does not give products
+        fetchQuery(query: Query): Promise<Collection[]>;
     }
 
-    // Checkout
-    export class CheckoutResource {
-        /**
-         * Creates a checkout.
-         *
-         * @example
-         * const input = {
-         *   lineItems: [
-         *     {variantId: 'Z2lkOi8vc2hvcGlmeS9Qcm9kdWN0VmFyaWFudC8yOTEwNjAyMjc5Mg==', quantity: 5}
-         *   ]
-         * };
-         *
-         * client.checkout.create(input).then((checkout) => {
-         *   // Do something with the newly created checkout
-         * });
-         */
-        create(input?: {
-            email?: string;
-            lineItems?: LineItemInput[];
-            shippingAddress?: MailingAddress;
-            note?: string;
-            customAttributes?: AttributeInput[];
-        }): Promise<Cart>;
-
-        /**
-         * Fetches a checkout by ID.
-         *
-         * @example
-         * client.checkout.fetch('FlZj9rZXlN5MDY4ZDFiZTUyZTUwNTE2MDNhZjg=').then((checkout) => {
-         *   // Do something with the checkout
-         * });
-         */
-        fetch(id: string): Promise<Cart>;
-
-        /**
-         * Adds line items to an existing checkout.
-         *
-         * @example
-         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
-         * const lineItems = [{variantId: 'Z2lkOi8vc2hvcGlmeS9Qcm9kdWN0VmFyaWFudC8yOTEwNjAyMjc5Mg==', quantity: 5}];
-         *
-         * client.checkout.addLineItems(checkoutId, lineItems).then((checkout) => {
-         *   // Do something with the updated checkout
-         * });
-         */
-        addLineItems(checkoutId: string, lineItems: LineItemInput[]): Promise<Cart>;
-
-        /**
-         * Removes line items from an existing checkout.
-         *
-         * @example
-         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
-         * const lineItemIds = ['TViZGE5Y2U1ZDFhY2FiMmM2YT9rZXk9NTc2YjBhODcwNWIxYzg0YjE5ZjRmZGQ5NjczNGVkZGU='];
-         *
-         * client.checkout.removeLineItems(checkoutId, lineItemIds).then((checkout) => {
-         *   // Do something with the updated checkout
-         * });
-         */
-        removeLineItems(checkoutId: string, lineItemIds: string[]): Promise<Cart>;
-
-        /**
-         * Updates line items on an existing checkout.
-         *
-         * @example
-         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
-         * const lineItems = [
-         *   {
-         *     id: 'TViZGE5Y2U1ZDFhY2FiMmM2YT9rZXk9NTc2YjBhODcwNWIxYzg0YjE5ZjRmZGQ5NjczNGVkZGU=',
-         *     quantity: 5,
-         *     variantId: 'Z2lkOi8vc2hvcGlmeS9Qcm9kdWN0VmFyaWFudC8yOTEwNjAyMjc5Mg=='
-         *   }
-         * ];
-         *
-         * client.checkout.updateLineItems(checkoutId, lineItems).then(checkout => {
-         *   // Do something with the updated checkout
-         * });
-         */
-        updateLineItems(checkoutId: string, lineItems: LineItemInput[]): Promise<Cart>;
-
-        /**
-         * Remove all line items from cart
-         */
-        clearLineItems(checkoutId: string | number, lineItems: LineItemInput[]): Promise<Cart>;
-
-        /**
-         * Replace line items on an existing checkout.
-         *
-         * @example
-         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
-         * const lineItems = [{variantId: 'Z2lkOi8vc2hvcGlmeS9Qcm9kdWN0VmFyaWFudC8yOTEwNjAyMjc5Mg==', quantity: 5}];
-         *
-         * client.checkout.replaceLineItems(checkoutId, lineItems).then((checkout) => {
-         *   // Do something with the updated checkout
-         * });
-         */
-        replaceLineItems(checkoutId: string, lineItems: LineItemInput[]): Promise<Cart>;
-
-        /**
-         * Replaces the value of checkout's custom attributes and/or note with values defined in the input
-         *
-         * @example
-         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
-         * const input = {customAttributes: [{key: "MyKey", value: "MyValue"}]};
-         *
-         * client.checkout.updateAttributes(checkoutId, input).then((checkout) => {
-         *   // Do something with the updated checkout
-         * });
-         */
-        updateAttributes(
-            checkoutId: string,
-            input?: {
-                allowPartialAddresses?: boolean;
-                customAttributes: AttributeInput[];
-                note?: string;
-            }
-        ): Promise<Cart>;
-
-        /**
-         * Replaces the value of checkout's email address
-         *
-         * @example
-         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
-         * const email = 'user@example.com';
-         *
-         * client.checkout.updateEmail(checkoutId, email).then((checkout) => {
-         *   // Do something with the updated checkout
-         * });
-         */
-        updateEmail(checkoutId: string, email: string): Promise<Cart>;
-
-        /**
-         * Applies a discount to an existing checkout using a discount code.
-         *
-         * @example
-         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
-         * const discountCode = 'best-discount-ever';
-         *
-         * client.checkout.addDiscount(checkoutId, discountCode).then((checkout) => {
-         *   // Do something with the updated checkout
-         * });
-         */
-        addDiscount(checkoutId: string, discountCode: string): Promise<Cart>;
-
-        /**
-         * Removes the applied discount from an existing checkout.
-         *
-         * @example
-         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
-         *
-         * client.checkout.removeDiscount(checkoutId).then((checkout) => {
-         *   // Do something with the updated checkout
-         * });
-         */
-        removeDiscount(checkoutId: string): Promise<Cart>;
-
-        /**
-         * Applies gift cards to an existing checkout using a list of gift card codes
-         *
-         * @example
-         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
-         * const giftCardCodes = ['6FD8853DAGAA949F'];
-         *
-         * client.checkout.addGiftCards(checkoutId, giftCardCodes).then((checkout) => {
-         *   // Do something with the updated checkout
-         * });
-         */
-        addGiftCards(checkoutId: string, giftCardCodes: string[]): Promise<Cart>;
-
-        /**
-         * Remove a gift card from an existing checkout
-         *
-         * @example
-         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
-         * const appliedGiftCardId = 'Z2lkOi8vc2hvcGlmeS9BcHBsaWVkR2lmdENhcmQvNDI4NTQ1ODAzMTI=';
-         *
-         * client.checkout.removeGiftCard(checkoutId, appliedGiftCardId).then((checkout) => {
-         *   // Do something with the updated checkout
-         * });
-         */
-        removeGiftCard(checkoutId: string, appliedGiftCardId: string): Promise<Cart>;
-
-        /**
-         * Updates shipping address on an existing checkout.
-         *
-         * @example
-         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
-         * const shippingAddress = {
-         *    address1: 'Chestnut Street 92',
-         *    address2: 'Apartment 2',
-         *    city: 'Louisville',
-         *    company: null,
-         *    country: 'United States',
-         *    firstName: 'Bob',
-         *    lastName: 'Norman',
-         *    phone: '555-625-1199',
-         *    province: 'Kentucky',
-         *    zip: '40202'
-         *  };
-         *
-         * client.checkout.updateShippingAddress(checkoutId, shippingAddress).then(checkout => {
-         *   // Do something with the updated checkout
-         * });
-         */
-        updateShippingAddress(checkoutId: string, shippingAddress: MailingAddress): Promise<Cart>;
-    }
-
-    // Shop
-    export class ShopResource {
-        /**
-         * Fetches shop information (`currencyCode`, `description`, `moneyFormat`, `name`, and `primaryDomain`).
-         * See the {@link https://help.shopify.com/api/storefront-api/reference/object/shop|Storefront API reference} for more information.
-         *
-         * @example
-         * client.shop.fetchInfo().then((shop) => {
-         *   // Do something with the shop
-         * });
-         */
-        fetchInfo(): Promise<Shop>;
-
-        /**
-         * Fetches shop policies (privacy policy, terms of service and refund policy).
-         *
-         * @example
-         * client.shop.fetchPolicies().then((shop) => {
-         *   // Do something with the shop
-         * });
-         */
-        fetchPolicies(): Promise<Shop>;
-    }
-
-    // Image
-    export class ImageResource {
-        helpers: ImageHelpers;
-    }
-
-    export interface ImageHelpers {
-        /**
-         * Generates the image src for a resized image with maximum dimensions `maxWidth` and `maxHeight`.
-         * Images do not scale up.
-         *
-         * @example
-         * const url = client.image.helpers.imageForSize(product.variants[0].image, {maxWidth: 50, maxHeight: 50});
-         */
-        imageForSize(image: Image, options: { maxWidth: number; maxHeight: number }): string;
-    }
-
-    //
-    // ProductResource return objects and friends
-    // ----------------------------------------------------------------------
-    /**
-     * @see https://help.shopify.com/en/api/storefront-api/reference/object/product
-     */
-    export interface Product extends Node {
-        /**
-         * Whether the product is available on the Online Store channel and in stock.
-         */
-        availableForSale: boolean;
-
-        /**
-         * The date and time when the product was created.
-         */
-        createdAt: string;
-
-        /**
-         * The date and time when the product was last modified.
-         */
-        updatedAt: string;
-
-        /**
-         * The description of the product, complete with HTML formatting.
-         */
-        descriptionHtml: string;
-
-        /**
-         * Stripped description of the product, single line with HTML tags removed.
-         */
-        description: string;
-
-        /**
-         * A human-friendly unique string for the Product automatically generated from its title.
-         * They are used by the Liquid templating language to refer to objects.
-         */
-        handle: string;
-
-        /**
-         * A categorization that a product can be tagged with, commonly used for filtering and searching.
-         */
-        productType: string;
-
-        /**
-         * The product’s title.
-         */
-        title: string;
-
-        /**
-         * The product’s vendor name.
-         */
-        vendor: string;
-
-        /**
-         * The date and time when the product was published to the channel.
-         */
-        publishedAt: string;
-
-        /**
-         * The online store URL for the product. A value of null indicates that the product is not published to the Online Store sales channel.
-         */
-        onlineStoreUrl: string;
-
-        /**
-         * List of custom product options (maximum of 3 per product).
-         */
-        options: ProductOption[];
-
-        /**
-         * List of images associated with the product.
-         */
-        images: ImageConnection;
-
-        /**
-         * List of collections a product belongs to.
-         */
-        variants: ProductVariantConnection;
-    }
-
-    export interface ImageConnection extends BaseConnection<Image> {}
-
-    export interface ProductVariantConnection extends BaseConnection<ProductVariant> {}
-
-    export interface PageInfo {
-        /**
-         * Indicates if there are more pages to fetch.
-         */
-        hasNextPage: boolean;
-
-        /**
-         * Indicates if there are any pages prior to the current page.
-         */
-        hasPreviousPage: boolean;
-    }
-
-    /**
-     * An object specifying the query data
-     */
-    export interface Query {
-        /**
-         * The relay `first` param. This specifies page size.
-         */
-        first?: number;
-
-        /**
-         * The key to sort results by. Available values are
-         *  documented as {@link https://help.shopify.com/api/storefront-api/reference/enum/productsortkeys|Product Sort Keys}.
-         */
-        sortKey?: string;
-
-        /**
-         * A query string. See full documentation {@link https://help.shopify.com/api/storefront-api/reference/object/shop#products|here}
-         */
-        query?: string;
-
-        /**
-         * Whether or not to reverse the sort order of the results
-         */
-        reverse?: boolean;
-    }
-
-    /**
-     * @see https://help.shopify.com/en/api/storefront-api/reference/object/productvariant
-     */
-    export interface ProductVariant extends Node {
-        /**
-         * The product variant’s title.
-         */
-        title: string;
-
-        /**
-         * The product variant’s price.
-         */
-        price: MoneyV2;
-
-        /**
-         * List of prices and compare-at prices in the presentment currencies for this shop.
-         */
-        presentmentPrices: ProductVariantPricePairConnection;
-
-        /**
-         * The weight of the product variant in the unit system specified with weightUnit.
-         */
-        weight: number;
-
-        /**
-         * The SKU (stock keeping unit) associated with the variant.
-         */
-        sku: string;
-
-        /**
-         * Indicates if the product variant is available for sale.
-         */
-        available: boolean;
-
-        /**
-         * The compare at price of the variant.
-         * This can be used to mark a variant as on sale, when compareAtPriceV2 is higher than priceV2.
-         */
-        compareAtPrice: MoneyV2;
-
-        /**
-         * Image associated with the product variant. This field falls back to the product image if no image is available.
-         */
-        image: Image;
-
-        /**
-         * List of product options applied to the variant.
-         */
-        selectedOptions: SelectedOption[];
-    }
-
-    export interface ProductVariantPricePairConnection extends BaseConnection<ProductVariantPricePair> {}
-
-    /**
-     * @see https://help.shopify.com/en/api/storefront-api/reference/object/productvariantpricepair
-     */
-    export interface ProductVariantPricePair {
-        compareAtPrice: MoneyV2;
-        price: MoneyV2;
-    }
-
-    /**
-     * @see https://help.shopify.com/en/api/storefront-api/reference/object/selectedoption
-     */
-    export interface SelectedOption {
-        /**
-         * The product option’s name.
-         */
-
-        name: string;
-
-        /**
-         * The product option’s value.
-         */
-        value: string;
-    }
-
-    /**
-     * @see https://help.shopify.com/en/api/storefront-api/reference/object/productoption
-     */
-    export interface ProductOption extends Node {
-        /**
-         * name of option (ex. "Size", "Color")
-         */
-        name: string;
-
-        /**
-         * The corresponding value to the product option name.
-         */
-        values: Array<string>;
-    }
-
-    //
-    // CollectionResource return objects and friends
-    // ----------------------------------------------------------------------
     /**
      * @see https://help.shopify.com/en/api/storefront-api/reference/object/collection
      */
@@ -707,12 +456,212 @@ declare namespace ShopifyBuy {
         /**
          * Image associated with the collection.
          */
-        image: Image;
+        image: Pick<Image, 'id' | 'src' | 'altText'> | null;
+    }
+    //#endregion CollectionResource and friends
+
+    //#region CheckoutResource and friends
+    // ----------------------------------------------------------------------
+    export class CheckoutResource {
+        /**
+         * Creates a checkout.
+         *
+         * @example
+         * const input = {
+         *   lineItems: [
+         *     {variantId: 'Z2lkOi8vc2hvcGlmeS9Qcm9kdWN0VmFyaWFudC8yOTEwNjAyMjc5Mg==', quantity: 5}
+         *   ]
+         * };
+         *
+         * client.checkout.create(input).then((checkout) => {
+         *   // Do something with the newly created checkout
+         * });
+         */
+        create(input?: {
+            email?: string;
+            lineItems?: CheckoutLineItemInput[];
+            shippingAddress?: MailingAddress;
+            note?: string;
+            customAttributes?: AttributeInput[];
+        }): Promise<Checkout>;
+
+        /**
+         * Fetches a checkout by ID.
+         *
+         * @example
+         * client.checkout.fetch('FlZj9rZXlN5MDY4ZDFiZTUyZTUwNTE2MDNhZjg=').then((checkout) => {
+         *   // Do something with the checkout
+         * });
+         */
+        fetch(id: string): Promise<Checkout>;
+
+        /**
+         * Adds line items to an existing checkout.
+         *
+         * @example
+         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
+         * const lineItems = [{variantId: 'Z2lkOi8vc2hvcGlmeS9Qcm9kdWN0VmFyaWFudC8yOTEwNjAyMjc5Mg==', quantity: 5}];
+         *
+         * client.checkout.addLineItems(checkoutId, lineItems).then((checkout) => {
+         *   // Do something with the updated checkout
+         * });
+         */
+        addLineItems(checkoutId: string, lineItems: CheckoutLineItemInput[]): Promise<Checkout>;
+
+        /**
+         * Removes line items from an existing checkout.
+         *
+         * @example
+         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
+         * const lineItemIds = ['TViZGE5Y2U1ZDFhY2FiMmM2YT9rZXk9NTc2YjBhODcwNWIxYzg0YjE5ZjRmZGQ5NjczNGVkZGU='];
+         *
+         * client.checkout.removeLineItems(checkoutId, lineItemIds).then((checkout) => {
+         *   // Do something with the updated checkout
+         * });
+         */
+        removeLineItems(checkoutId: string, lineItemIds: string[]): Promise<Checkout>;
+
+        /**
+         * Updates line items on an existing checkout.
+         *
+         * @example
+         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
+         * const lineItems = [
+         *   {
+         *     id: 'TViZGE5Y2U1ZDFhY2FiMmM2YT9rZXk9NTc2YjBhODcwNWIxYzg0YjE5ZjRmZGQ5NjczNGVkZGU=',
+         *     quantity: 5,
+         *     variantId: 'Z2lkOi8vc2hvcGlmeS9Qcm9kdWN0VmFyaWFudC8yOTEwNjAyMjc5Mg=='
+         *   }
+         * ];
+         *
+         * client.checkout.updateLineItems(checkoutId, lineItems).then(checkout => {
+         *   // Do something with the updated checkout
+         * });
+         */
+        updateLineItems(checkoutId: string, lineItems: CheckoutLineItemInput[]): Promise<Checkout>;
+
+        /**
+         * Replace line items on an existing checkout.
+         *
+         * @example
+         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
+         * const lineItems = [{variantId: 'Z2lkOi8vc2hvcGlmeS9Qcm9kdWN0VmFyaWFudC8yOTEwNjAyMjc5Mg==', quantity: 5}];
+         *
+         * client.checkout.replaceLineItems(checkoutId, lineItems).then((checkout) => {
+         *   // Do something with the updated checkout
+         * });
+         */
+        replaceLineItems(checkoutId: string, lineItems: CheckoutLineItemInput[]): Promise<Checkout>;
+
+        /**
+         * Replaces the value of checkout's custom attributes and/or note with values defined in the input
+         *
+         * @example
+         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
+         * const input = {customAttributes: [{key: "MyKey", value: "MyValue"}]};
+         *
+         * client.checkout.updateAttributes(checkoutId, input).then((checkout) => {
+         *   // Do something with the updated checkout
+         * });
+         */
+        updateAttributes(
+            checkoutId: string,
+            input?: {
+                allowPartialAddresses?: boolean;
+                customAttributes?: AttributeInput[];
+                note?: string;
+            }
+        ): Promise<Checkout>;
+
+        /**
+         * Replaces the value of checkout's email address
+         *
+         * @example
+         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
+         * const email = 'user@example.com';
+         *
+         * client.checkout.updateEmail(checkoutId, email).then((checkout) => {
+         *   // Do something with the updated checkout
+         * });
+         */
+        updateEmail(checkoutId: string, email: string): Promise<Checkout>;
+
+        /**
+         * Applies a discount to an existing checkout using a discount code.
+         *
+         * @example
+         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
+         * const discountCode = 'best-discount-ever';
+         *
+         * client.checkout.addDiscount(checkoutId, discountCode).then((checkout) => {
+         *   // Do something with the updated checkout
+         * });
+         */
+        addDiscount(checkoutId: string, discountCode: string): Promise<Checkout>;
+
+        /**
+         * Removes the applied discount from an existing checkout.
+         *
+         * @example
+         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
+         *
+         * client.checkout.removeDiscount(checkoutId).then((checkout) => {
+         *   // Do something with the updated checkout
+         * });
+         */
+        removeDiscount(checkoutId: string): Promise<Checkout>;
+
+        /**
+         * Applies gift cards to an existing checkout using a list of gift card codes
+         *
+         * @example
+         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
+         * const giftCardCodes = ['6FD8853DAGAA949F'];
+         *
+         * client.checkout.addGiftCards(checkoutId, giftCardCodes).then((checkout) => {
+         *   // Do something with the updated checkout
+         * });
+         */
+        addGiftCards(checkoutId: string, giftCardCodes: string[]): Promise<Checkout>;
+
+        /**
+         * Remove a gift card from an existing checkout
+         *
+         * @example
+         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
+         * const appliedGiftCardId = 'Z2lkOi8vc2hvcGlmeS9BcHBsaWVkR2lmdENhcmQvNDI4NTQ1ODAzMTI=';
+         *
+         * client.checkout.removeGiftCard(checkoutId, appliedGiftCardId).then((checkout) => {
+         *   // Do something with the updated checkout
+         * });
+         */
+        removeGiftCard(checkoutId: string, appliedGiftCardId: string): Promise<Checkout>;
+
+        /**
+         * Updates shipping address on an existing checkout.
+         *
+         * @example
+         * const checkoutId = 'Z2lkOi8vc2hvcGlmeS9DaGVja291dC9kMTZmM2EzMDM4Yjc4N=';
+         * const shippingAddress = {
+         *    address1: 'Chestnut Street 92',
+         *    address2: 'Apartment 2',
+         *    city: 'Louisville',
+         *    company: null,
+         *    country: 'United States',
+         *    firstName: 'Bob',
+         *    lastName: 'Norman',
+         *    phone: '555-625-1199',
+         *    province: 'Kentucky',
+         *    zip: '40202'
+         *  };
+         *
+         * client.checkout.updateShippingAddress(checkoutId, shippingAddress).then(checkout => {
+         *   // Do something with the updated checkout
+         * });
+         */
+        updateShippingAddress(checkoutId: string, shippingAddress: MailingAddress): Promise<Checkout>;
     }
 
-    //
-    // CheckoutResource return objects and friends
-    // ----------------------------------------------------------------------
     /**
      * @see https://help.shopify.com/en/api/storefront-api/reference/object/checkout
      */
@@ -748,12 +697,12 @@ declare namespace ShopifyBuy {
         /**
          * The url pointing to the checkout accessible from the web.
          */
-        webUrl: string;
+        webUrl: URL;
 
         /**
          * The Order Status Page for this Checkout, null when checkout is not completed.
          */
-        orderStatusUrl: string | null;
+        orderStatusUrl: URL | null;
 
         /**
          * Specifies if the Checkout is tax exempt.
@@ -833,7 +782,7 @@ declare namespace ShopifyBuy {
         /**
          * Once a shipping rate is selected by the customer it is transitioned to a shippingLine object.
          */
-        shippingLine: ShippingRate;
+        shippingLine: ShippingRate | null;
 
         /**
          * A list of extra information that is added to the checkout.
@@ -848,7 +797,8 @@ declare namespace ShopifyBuy {
         lineItems: CheckoutLineItemConnection;
     }
 
-    export interface DiscountApplicationConnection extends BaseConnection<DiscountApplication> {}
+    type DiscountApplicationConnectionEdge = Edge<DiscountApplication>;
+    export interface DiscountApplicationConnection extends BaseConnection<DiscountApplicationConnectionEdge> {}
 
     /**
      * @see https://help.shopify.com/en/api/storefront-api/reference/interface/discountapplication
@@ -869,10 +819,48 @@ declare namespace ShopifyBuy {
          */
         targetType: DiscountApplicationTargetType;
 
+        // since a "DiscountApplication" can be a subset of ManualDiscountApplication
+        // or DiscountCodeApplication or ScriptDiscountApplication
+        // or AutomaticDiscountApplication then we must specify the props as optional
+
         /**
-         * The value of the discount application.
+         * The title of the application.
+         *
+         * @example
+         * // note the use of the bang (!) operator
+         * const title = discountApplication.title!;
          */
-        value: PricingValue;
+        title?: string;
+
+        /**
+         * The description of the application.
+         *
+         * @example
+         * // note the use of the bang (!) operator
+         * const desc = discountApplication.description!;
+         *
+         * // heres how to use desc if you know it isnt going to be null
+         * const desc = discountApplication.description! as string;
+         */
+        description?: string | null;
+
+        /**
+         * The string identifying the discount code that was used at the time of application.
+         *
+         * @example
+         * // note the use of the bang (!) operator
+         * const code = discountApplication.code!;
+         */
+        code?: string;
+
+        /**
+         * Specifies whether the discount code was applied successfully.
+         *
+         * @example
+         * // note the use of the bang (!) operator
+         * const isApplicable = discountApplication.applicable!;
+         */
+        applicable?: boolean;
     }
 
     /**
@@ -880,11 +868,11 @@ declare namespace ShopifyBuy {
      */
     export enum DiscountApplicationAllocationMethod {
         /** The value is spread across all entitled lines. */
-        ACROSS,
+        ACROSS = 'ACROSS',
         /** The value is applied onto every entitled line. */
-        EACH,
+        EACH = 'EACH',
         /** The value is specifically applied onto a particular line. */
-        ONE,
+        ONE = 'ONE',
     }
 
     /**
@@ -892,11 +880,11 @@ declare namespace ShopifyBuy {
      */
     export enum DiscountApplicationTargetSelection {
         /** The discount is allocated onto all the lines. */
-        ALL,
+        ALL = 'ALL',
         /** The discount is allocated onto only the lines it is entitled for. */
-        ENTITLED,
+        ENTITLED = 'ENTITLED',
         /** The discount is allocated onto explicitly chosen lines. */
-        EXPLICIT,
+        EXPLICIT = 'EXPLICIT',
     }
 
     /**
@@ -904,9 +892,9 @@ declare namespace ShopifyBuy {
      */
     export enum DiscountApplicationTargetType {
         /** The discount applies onto line items. */
-        LINE_ITEM,
+        LINE_ITEM = 'LINE_ITEM',
         /** The discount applies onto shipping lines. */
-        SHIPPING_LINE,
+        SHIPPING_LINE = 'SHIPPING_LINE',
     }
 
     /**
@@ -932,6 +920,94 @@ declare namespace ShopifyBuy {
          * The last characters of the Gift Card code
          */
         lastCharacters: string;
+    }
+
+    /**
+     * @see https://help.shopify.com/en/api/storefront-api/reference/object/mailingaddress
+     */
+    export interface MailingAddress extends Node {
+        /**
+         * The first line of the address. Typically the street address or PO Box number.
+         */
+        address1: string | null;
+
+        /**
+         * The second line of the address. Typically the number of the apartment, suite, or unit.
+         */
+        address2: string | null;
+
+        /**
+         * The name of the city, district, village, or town.
+         */
+        city: string | null;
+
+        /**
+         * The name of the customer's company or organization.
+         */
+        company: string | null;
+
+        /**
+         * The name of the country.
+         */
+        country: string | null;
+
+        /**
+         * A formatted version of the address including the customer's company and name
+         */
+        formatted: string;
+
+        /**
+         * The first name of the customer.
+         */
+        firstName: string | null;
+
+        /**
+         * The last name of the customer.
+         */
+        lastName: string | null;
+
+        /**
+         * The latitude coordinate of the customer address.
+         */
+        latitude: number | null;
+
+        /**
+         * The longitude coordinate of the customer address.
+         */
+        longitude: number | null;
+
+        /**
+         * A unique phone number for the customer.
+         * Formatted using E.164 standard. For example, +16135551111.
+         */
+        phone: string | null;
+
+        /**
+         * The region of the address, such as the province, state, or district.
+         */
+        province: string | null;
+
+        /**
+         * The zip or postal code of the address.
+         */
+        zip: string | null;
+
+        /**
+         * The full name of the customer, based on firstName and lastName.
+         */
+        name: string | null;
+
+        /**
+         * The two-letter code for the country of the address.
+         * For example, US.
+         */
+        countryCode: CountryCode | null;
+
+        /**
+         * The two-letter code for the region.
+         * For example, ON.
+         */
+        provinceCode: string | null;
     }
 
     /**
@@ -1030,7 +1106,7 @@ declare namespace ShopifyBuy {
         /**
          * The unique URL that the customer can use to access the order.
          */
-        customerUrl: string | null;
+        customerUrl: URL | null;
 
         /**
          * The address to where the order will be shipped.
@@ -1043,7 +1119,8 @@ declare namespace ShopifyBuy {
         lineItems: OrderLineItemConnection;
     }
 
-    interface OrderLineItemConnection extends BaseConnection<OrderLineItem> {}
+    type OrderLineItemConnectionEdge = EdgeWithCursor<OrderLineItem>;
+    interface OrderLineItemConnection extends BaseConnection<OrderLineItemConnectionEdge> {}
 
     /**
      * @see https://help.shopify.com/en/api/storefront-api/reference/object/orderlineitem
@@ -1075,7 +1152,24 @@ declare namespace ShopifyBuy {
         variant: ProductVariant | null;
     }
 
-    interface CheckoutLineItemConnection extends BaseConnection<CheckoutLineItem> {}
+    /**
+     * @see https://help.shopify.com/en/api/storefront-api/reference/object/attribute
+     */
+    export interface Attribute {
+        key: string;
+        value: string | null;
+    }
+
+    /**
+     * @see https://help.shopify.com/en/api/storefront-api/reference/object/discountallocation
+     */
+    export interface DiscountAllocation {
+        allocatedAmount: MoneyV2;
+        discountApplication: DiscountApplication;
+    }
+
+    type CheckoutLineItemConnectionEdge = EdgeWithCursor<CheckoutLineItem>;
+    interface CheckoutLineItemConnection extends BaseConnection<CheckoutLineItemConnectionEdge> {}
 
     /**
      * @see https://help.shopify.com/en/api/storefront-api/reference/object/checkoutlineitem
@@ -1107,66 +1201,10 @@ declare namespace ShopifyBuy {
         variant: ProductVariant | null;
     }
 
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    export interface Cart {
-        /**
-         * Get checkout URL for current cart
-         */
-        checkoutUrl: string;
-
-        /**
-         * get ID for current cart
-         */
-        id: string;
-
-        /**
-         * Gets the total quantity of all line items. Example: you've added two variants
-         * with quantities 3 and 2. lineItemCount will be 5.
-         */
-        lineItemCount: number;
-
-        /**
-         * Get an Array of CartLineItemModel's
-         */
-        lineItems: CheckoutLineItem[];
-
-        /**
-         * Get current subtotal price for all line items, before shipping, taxes, and discounts.
-         * Example: two items have been added to the cart that cost $1.25 then the subtotal will be 2.50
-         */
-        subtotalPrice: string;
-
-        appliedGiftCards: any;
-        availableShippingRates: any;
-        completedAt: string;
-        createdAt: string;
-        currencyCode: string;
-        customAttributes: Attribute[];
-        email?: string;
-        lineItemsSubtotalPrice: MoneyV2[];
-        note?: string;
-        order?: any;
-        orderStatusUrl?: string;
-        paymentDueV2: MoneyV2;
-        ready: boolean;
-        requiresShipping: boolean;
-        shippingAddress?: MailingAddress;
-        shippingDiscountAllocations: any;
-        shippingLine?: any;
-        subtotalPriceV2: MoneyV2;
-        taxExempt: boolean;
-        taxesIncluded: boolean;
-        totalPriceV2: MoneyV2;
-        totalTaxV2: MoneyV2;
-        updatedAt: string;
-        webUrl: string;
-    }
-
     /**
      * @see https://help.shopify.com/en/api/storefront-api/reference/input-object/checkoutlineiteminput
      */
-    export interface LineItemInput {
+    export interface CheckoutLineItemInput {
         /**
          * Extra information in the form of an array of Key-Value pairs about the line item.
          */
@@ -1182,36 +1220,138 @@ declare namespace ShopifyBuy {
          */
         variantId: string;
     }
+    //#endregion CheckoutResource and friends
 
-    /**
-     * https://help.shopify.com/en/api/storefront-api/reference/object/discountallocation
-     */
-    export interface DiscountAllocation {
-        allocatedAmount: MoneyV2;
-        discountApplication: DiscountApplication;
+    //#region ShopResource and friends
+    export class ShopResource {
+        /**
+         * Fetches shop information (`currencyCode`, `description`, `moneyFormat`, `name`, and `primaryDomain`).
+         * See the {@link https://help.shopify.com/api/storefront-api/reference/object/shop|Storefront API reference} for more information.
+         *
+         * @example
+         * client.shop.fetchInfo().then((shop) => {
+         *   // Do something with the shop
+         * });
+         */
+        fetchInfo(): Promise<Shop>;
+
+        /**
+         * Fetches shop policies (privacy policy, terms of service and refund policy).
+         *
+         * @example
+         * client.shop.fetchPolicies().then((shop) => {
+         *   // Do something with the shop
+         * });
+         */
+        fetchPolicies(): Promise<Policies>;
     }
 
     /**
-     * https://help.shopify.com/en/api/storefront-api/reference/interface/discountapplication
+     * @see https://help.shopify.com/en/api/storefront-api/reference/object/shop
      */
-    export interface DiscountApplication {
-        allocationMethod: any;
-        targetSelection: any;
-        targetType: any;
-        value: any;
+    export interface Shop {
+        /**
+         * The three-letter code for the currency that the shop accepts.
+         */
+        currencyCode: CurrencyCode;
+
+        /**
+         * Settings related to payments.
+         */
+        paymentSettings: {
+            /**
+             * A list of enabled currencies (ISO 4217 format) that the shop accepts.
+             * Merchants can enable currencies from their Shopify Payments
+             * settings in the Shopify admin.
+             */
+            enabledPresentmentCurrencies: CurrencyCode[];
+        };
+
+        /**
+         * A description of the shop.
+         */
+        description: string | null;
+
+        /**
+         * A string representing the way currency is formatted when
+         * the currency isn’t specified.
+         */
+        moneyFormat: string;
+
+        /**
+         * The shop’s name.
+         */
+        name: string;
+
+        primaryDomain: Domain;
+    }
+
+    export interface Domain {
+        /**
+         * The host name of the domain (eg: example.com).
+         */
+        host: string;
+
+        /**
+         * Whether SSL is enabled or not.
+         */
+        sslEnabled: boolean;
+
+        /**
+         * The URL of the domain (eg: https://example.com).
+         */
+        url: URL;
+    }
+
+    export interface Policies {
+        privacyPolicy: ShopPolicy;
+        termsOfService: ShopPolicy;
+        refundPolicy: ShopPolicy;
     }
 
     /**
-     * https://help.shopify.com/en/api/storefront-api/reference/union/pricingvalue
+     * @see https://help.shopify.com/en/api/storefront-api/reference/object/shoppolicy
      */
-    export type PricingValue = MoneyV2 | PricingPercentageValue;
+    interface ShopPolicy extends Node {
+        /**
+         * Policy’s title.
+         */
+        title: string;
 
-    /**
-     * https://help.shopify.com/en/api/storefront-api/reference/object/pricingpercentagevalue
-     */
-    export interface PricingPercentageValue {
-        percentage: string;
+        /**
+         * Public URL to the policy.
+         */
+        url: URL;
+
+        /**
+         * Policy text, maximum size of 64kb.
+         */
+        body: string;
     }
+    //#endregion ShopResource and friends
+
+    //#region ImageResource and friends
+    export class ImageResource {
+        helpers: ImageHelpers;
+    }
+
+    export interface ImageHelpers {
+        /**
+         * Generates the image src for a resized image with maximum dimensions `maxWidth` and `maxHeight`.
+         * Images do not scale up.
+         *
+         * @example
+         * const url = client.image.helpers.imageForSize(product.variants[0].image, {maxWidth: 50, maxHeight: 50});
+         */
+        imageForSize(image: Image, options: { maxWidth: number; maxHeight: number }): string;
+    }
+    //#endregion ImageResource and friends
+
+    //#region Shared Types
+    /**
+     * @see https://help.shopify.com/en/api/storefront-api/reference/scalar/url
+     */
+    export type URL = string;
 
     /**
      * @see https://help.shopify.com/en/api/graphql-admin-api/reference/scalar/money
@@ -1219,118 +1359,11 @@ declare namespace ShopifyBuy {
     export type Money = string;
 
     /**
-     * https://help.shopify.com/en/api/storefront-api/reference/object/moneyv2
+     * @see https://help.shopify.com/en/api/storefront-api/reference/object/moneyv2
      */
     export interface MoneyV2 {
         amount: number;
-        // @todo: type https://help.shopify.com/en/api/storefront-api/reference/enum/currencycode
-        currencyCode: string;
-    }
-
-    export interface Item {
-        variant: ProductVariant;
-        quantity: number;
-    }
-
-    /**
-     * https://help.shopify.com/en/api/storefront-api/reference/object/mailingaddress
-     */
-    export interface MailingAddress extends Node {
-        /**
-         * The first line of the address. Typically the street address or PO Box number.
-         */
-        address1?: string;
-
-        /**
-         * The second line of the address. Typically the number of the apartment, suite, or unit.
-         */
-        address2?: string;
-
-        /**
-         * The name of the city, district, village, or town.
-         */
-        city?: string;
-
-        /**
-         * The name of the customer's company or organization.
-         */
-        company?: string;
-
-        /**
-         * The name of the country.
-         */
-        country?: string;
-
-        /**
-         * The first name of the customer.
-         */
-        firstName?: string;
-
-        /**
-         * A formatted version of the address including the customer's company and name
-         */
-        formatted?: string;
-
-        /**
-         * The last name of the customer.
-         */
-        lastName?: string;
-
-        /**
-         * The latitude coordinate of the customer address.
-         */
-        latitude?: string;
-
-        /**
-         * The longitude coordinate of the customer address.
-         */
-        longitude?: string;
-
-        /**
-         * A unique phone number for the customer.
-         * Formatted using E.164 standard. For example, +16135551111.
-         */
-        phone?: string;
-
-        /**
-         * The region of the address, such as the province, state, or district.
-         */
-        province?: string;
-
-        /**
-         * The zip or postal code of the address.
-         */
-        zip?: string;
-
-        /**
-         * The full name of the customer, based on firstName and lastName.
-         */
-        name?: string;
-
-        /**
-         * The two-letter code for the country of the address.
-         * For example, US.
-         */
-        countryCode?: CountryCodeV2;
-
-        /**
-         * The two-letter code for the region.
-         * For example, ON.
-         */
-        provinceCode: string;
-    }
-
-    /**
-     * https://help.shopify.com/en/api/storefront-api/reference/enum/countrycode
-     */
-    export type CountryCodeV2 = string; //@todo
-
-    /**
-     * https://help.shopify.com/en/api/storefront-api/reference/object/attribute
-     */
-    export interface Attribute {
-        key: string;
-        value: string | null;
+        currencyCode: CurrencyCode;
     }
 
     /**
@@ -1342,45 +1375,44 @@ declare namespace ShopifyBuy {
     }
 
     /**
-     * TODO Validate schema matches js-buy
-     * Derived from REST API Docs: https://help.shopify.com/api/custom-storefronts/storefront-api/reference/object/shop#fields
-     */
-    export interface Shop {
-        description: string;
-        moneyFormat: string;
-        name: string;
-        /**
-         * TODO Add types for the Shop properties below
-         * PaymentSettings, ShopPolicy etc
-         */
-        paymentSettings: any;
-        primaryDomain: any;
-        privacyPolicy: any;
-        refundPolicy: any;
-        termsOfService: any;
-    }
-
-    /**
      * @see https://help.shopify.com/en/api/storefront-api/reference/object/image
      */
     export interface Image {
-        altText: string;
-        id: string;
+        /**
+         * A unique identifier for the image.
+         */
+        id: string | null;
+
+        /**
+         * A word or phrase to share the nature or contents of an image.
+         */
+        altText: string | null;
+
+        /**
+         * The location of the image as a URL.
+         */
+        src: string;
+
+        /**
+         * The location of the original image as a URL.
+         * If there are any existing transformations in the
+         * original source URL, they will remain and not be stripped.
+         */
         originalSrc: string;
+
+        /**
+         * The location of the transformed image as a URL. All transformation arguments are
+         * considered "best-effort". If they can be applied to an image, they will be.
+         * Otherwise any transformations which an image type does not support will be ignored.
+         */
         transformedSrc: string;
     }
 
-    //
-    // Generic/Global interfaces and types
-    // ----------------------------------------------------------------------
     /**
      * this is a generic connection interface that's used by others like ImageConnection
      */
-    export interface BaseConnection<N> {
-        edges: Array<{
-            cursor: string;
-            node: N;
-        }>;
+    export interface BaseConnection<E> {
+        edges: Array<E>;
         pageInfo: PageInfo;
     }
 
@@ -1390,8 +1422,805 @@ declare namespace ShopifyBuy {
          */
         id: string;
     }
-}
 
-declare module 'shopify-buy' {
-    export = ShopifyBuy;
+    // used for Connection Types
+    interface Edge<U> {
+        node: U;
+    }
+
+    // used for Connection Types
+    interface EdgeWithCursor<K> extends Edge<K> {
+        cursor: string;
+    }
+
+    // used for Connection Types
+    export interface PageInfo {
+        /**
+         * Indicates if there are more pages to fetch.
+         */
+        hasNextPage: boolean;
+
+        /**
+         * Indicates if there are any pages prior to the current page.
+         */
+        hasPreviousPage: boolean;
+    }
+
+    export enum CurrencyCode {
+        /** Zambian Kwacha (ZMW) */
+        ZMW = 'ZMW',
+        /** Afghan Afghani (AFN) */
+        AFN = 'AFN',
+        /** Albanian Lek (ALL) */
+        ALL = 'ALL',
+        /** Armenian Dram (AMD) */
+        AMD = 'AMD',
+        /** Netherlands Antillean Guilder */
+        ANG = 'ANG',
+        /** Angolan Kwanza (AOA) */
+        AOA = 'AOA',
+        /** Argentine Pesos (ARS) */
+        ARS = 'ARS',
+        /** Australian Dollars (AUD) */
+        AUD = 'AUD',
+        /** Aruban Florin (AWG) */
+        AWG = 'AWG',
+        /** Azerbaijani Manat (AZN) */
+        AZN = 'AZN',
+        /** Bosnia and Herzegovina Convertible Mark (BAM) */
+        BAM = 'BAM',
+        /** Barbadian Dollar (BBD) */
+        BBD = 'BBD',
+        /** Bangladesh Taka (BDT) */
+        BDT = 'BDT',
+        /** Bulgarian Lev (BGN) */
+        BGN = 'BGN',
+        /** Bahraini Dinar (BHD) */
+        BHD = 'BHD',
+        /** Burundian Franc (BIF) */
+        BIF = 'BIF',
+        /** Bermudian Dollar (BMD) */
+        BMD = 'BMD',
+        /** Brunei Dollar (BND) */
+        BND = 'BND',
+        /** Bolivian Boliviano (BOB) */
+        BOB = 'BOB',
+        /** Brazilian Real (BRL) */
+        BRL = 'BRL',
+        /** Bahamian Dollar (BSD) */
+        BSD = 'BSD',
+        /** Bhutanese Ngultrum (BTN) */
+        BTN = 'BTN',
+        /** Botswana Pula (BWP) */
+        BWP = 'BWP',
+        /** United Arab Emirates Dirham (AED) */
+        AED = 'AED',
+        /** Belize Dollar (BZD) */
+        BZD = 'BZD',
+        /** Canadian Dollars (CAD) */
+        CAD = 'CAD',
+        /** Congolese franc (CDF) */
+        CDF = 'CDF',
+        /** Swiss Francs (CHF) */
+        CHF = 'CHF',
+        /** Chilean Peso (CLP) */
+        CLP = 'CLP',
+        /** Chinese Yuan Renminbi (CNY) */
+        CNY = 'CNY',
+        /** Colombian Peso (COP) */
+        COP = 'COP',
+        /** Costa Rican Colones (CRC) */
+        CRC = 'CRC',
+        /** Cape Verdean escudo (CVE) */
+        CVE = 'CVE',
+        /** Czech Koruny (CZK) */
+        CZK = 'CZK',
+        /** Danish Kroner (DKK) */
+        DKK = 'DKK',
+        /** Dominican Peso (DOP) */
+        DOP = 'DOP',
+        /** Algerian Dinar (DZD) */
+        DZD = 'DZD',
+        /** Egyptian Pound (EGP) */
+        EGP = 'EGP',
+        /** Ethiopian Birr (ETB) */
+        ETB = 'ETB',
+        /** Euro (EUR) */
+        EUR = 'EUR',
+        /** Fijian Dollars (FJD) */
+        FJD = 'FJD',
+        /** United Kingdom Pounds (GBP) */
+        GBP = 'GBP',
+        /** Georgian Lari (GEL) */
+        GEL = 'GEL',
+        /** Ghanaian Cedi (GHS) */
+        GHS = 'GHS',
+        /** Gambian Dalasi (GMD) */
+        GMD = 'GMD',
+        /** Guatemalan Quetzal (GTQ) */
+        GTQ = 'GTQ',
+        /** Guyanese Dollar (GYD) */
+        GYD = 'GYD',
+        /** Hong Kong Dollars (HKD) */
+        HKD = 'HKD',
+        /** Honduran Lempira (HNL) */
+        HNL = 'HNL',
+        /** Croatian Kuna (HRK) */
+        HRK = 'HRK',
+        /** Haitian Gourde (HTG) */
+        HTG = 'HTG',
+        /** Hungarian Forint (HUF) */
+        HUF = 'HUF',
+        /** Indonesian Rupiah (IDR) */
+        IDR = 'IDR',
+        /** Israeli New Shekel (NIS) */
+        ILS = 'ILS',
+        /** Indian Rupees (INR) */
+        INR = 'INR',
+        /** Iraqi Dinar (IQD) */
+        IQD = 'IQD',
+        /** Icelandic Kronur (ISK) */
+        ISK = 'ISK',
+        /** Jersey Pound */
+        JEP = 'JEP',
+        /** Jamaican Dollars (JMD) */
+        JMD = 'JMD',
+        /** Jordanian Dinar (JOD) */
+        JOD = 'JOD',
+        /** Japanese Yen (JPY) */
+        JPY = 'JPY',
+        /** Kenyan Shilling (KES) */
+        KES = 'KES',
+        /** Kyrgyzstani Som (KGS) */
+        KGS = 'KGS',
+        /** Cambodian Riel */
+        KHR = 'KHR',
+        /** Comorian Franc (KMF) */
+        KMF = 'KMF',
+        /** South Korean Won (KRW) */
+        KRW = 'KRW',
+        /** Kuwaiti Dinar (KWD) */
+        KWD = 'KWD',
+        /** Cayman Dollars (KYD) */
+        KYD = 'KYD',
+        /** Kazakhstani Tenge (KZT) */
+        KZT = 'KZT',
+        /** Laotian Kip (LAK) */
+        LAK = 'LAK',
+        /** Lebanese Pounds (LBP) */
+        LBP = 'LBP',
+        /** Sri Lankan Rupees (LKR) */
+        LKR = 'LKR',
+        /** Liberian Dollar (LRD) */
+        LRD = 'LRD',
+        /** Lesotho Loti (LSL) */
+        LSL = 'LSL',
+        /** Lithuanian Litai (LTL) */
+        LTL = 'LTL',
+        /** Latvian Lati (LVL) */
+        LVL = 'LVL',
+        /** Moroccan Dirham */
+        MAD = 'MAD',
+        /** Moldovan Leu (MDL) */
+        MDL = 'MDL',
+        /** Malagasy Ariary (MGA) */
+        MGA = 'MGA',
+        /** Macedonia Denar (MKD) */
+        MKD = 'MKD',
+        /** Burmese Kyat (MMK) */
+        MMK = 'MMK',
+        /** Mongolian Tugrik */
+        MNT = 'MNT',
+        /** Macanese Pataca (MOP) */
+        MOP = 'MOP',
+        /** Mauritian Rupee (MUR) */
+        MUR = 'MUR',
+        /** Maldivian Rufiyaa (MVR) */
+        MVR = 'MVR',
+        /** Malawian Kwacha (MWK) */
+        MWK = 'MWK',
+        /** Mexican Pesos (MXN) */
+        MXN = 'MXN',
+        /** Malaysian Ringgits (MYR) */
+        MYR = 'MYR',
+        /** Mozambican Metical */
+        MZN = 'MZN',
+        /** Namibian Dollar */
+        NAD = 'NAD',
+        /** Nigerian Naira (NGN) */
+        NGN = 'NGN',
+        /** Nicaraguan Córdoba (NIO) */
+        NIO = 'NIO',
+        /** Norwegian Kroner (NOK) */
+        NOK = 'NOK',
+        /** Nepalese Rupee (NPR) */
+        NPR = 'NPR',
+        /** New Zealand Dollars (NZD) */
+        NZD = 'NZD',
+        /** Omani Rial (OMR) */
+        OMR = 'OMR',
+        /** Panamian Balboa (PAB) */
+        PAB = 'PAB',
+        /** Peruvian Nuevo Sol (PEN) */
+        PEN = 'PEN',
+        /** Papua New Guinean Kina (PGK) */
+        PGK = 'PGK',
+        /** Philippine Peso (PHP) */
+        PHP = 'PHP',
+        /** Pakistani Rupee (PKR) */
+        PKR = 'PKR',
+        /** Polish Zlotych (PLN) */
+        PLN = 'PLN',
+        /** Paraguayan Guarani (PYG) */
+        PYG = 'PYG',
+        /** Qatari Rial (QAR) */
+        QAR = 'QAR',
+        /** Romanian Lei (RON) */
+        RON = 'RON',
+        /** Serbian dinar (RSD) */
+        RSD = 'RSD',
+        /** Russian Rubles (RUB) */
+        RUB = 'RUB',
+        /** Rwandan Franc (RWF) */
+        RWF = 'RWF',
+        /** Saudi Riyal (SAR) */
+        SAR = 'SAR',
+        /** Solomon Islands Dollar (SBD) */
+        SBD = 'SBD',
+        /** Seychellois Rupee (SCR) */
+        SCR = 'SCR',
+        /** Sudanese Pound (SDG) */
+        SDG = 'SDG',
+        /** Swedish Kronor (SEK) */
+        SEK = 'SEK',
+        /** Singapore Dollars (SGD) */
+        SGD = 'SGD',
+        /** Surinamese Dollar (SRD) */
+        SRD = 'SRD',
+        /** South Sudanese Pound (SSP) */
+        SSP = 'SSP',
+        /** Sao Tome And Principe Dobra (STD) */
+        STD = 'STD',
+        /** Syrian Pound (SYP) */
+        SYP = 'SYP',
+        /** Swazi Lilangeni (SZL) */
+        SZL = 'SZL',
+        /** Thai baht (THB) */
+        THB = 'THB',
+        /** Turkmenistani Manat (TMT) */
+        TMT = 'TMT',
+        /** Tunisian Dinar (TND) */
+        TND = 'TND',
+        /** Turkish Lira (TRY) */
+        TRY = 'TRY',
+        /** Trinidad and Tobago Dollars (TTD) */
+        TTD = 'TTD',
+        /** Taiwan Dollars (TWD) */
+        TWD = 'TWD',
+        /** Tanzanian Shilling (TZS) */
+        TZS = 'TZS',
+        /** Ukrainian Hryvnia (UAH) */
+        UAH = 'UAH',
+        /** Ugandan Shilling (UGX) */
+        UGX = 'UGX',
+        /** United States Dollars (USD) */
+        USD = 'USD',
+        /** Uruguayan Pesos (UYU) */
+        UYU = 'UYU',
+        /** Uzbekistan som (UZS) */
+        UZS = 'UZS',
+        /** Venezuelan Bolivares (VEF) */
+        VEF = 'VEF',
+        /** Vietnamese đồng (VND) */
+        VND = 'VND',
+        /** Vanuatu Vatu (VUV) */
+        VUV = 'VUV',
+        /** Samoan Tala (WST) */
+        WST = 'WST',
+        /** Central African CFA Franc (XAF) */
+        XAF = 'XAF',
+        /** East Caribbean Dollar (XCD) */
+        XCD = 'XCD',
+        /** West African CFA franc (XOF) */
+        XOF = 'XOF',
+        /** CFP Franc (XPF) */
+        XPF = 'XPF',
+        /** Yemeni Rial (YER) */
+        YER = 'YER',
+        /** South African Rand (ZAR) */
+        ZAR = 'ZAR',
+        /**
+         * Belarusian Ruble (BYR)
+         * @deprecated BYR is deprecated. Use BYN available from version 2019-10 onwards instead.
+         */
+        BYR = 'BYR',
+    }
+
+    export enum CountryCode {
+        /** Zimbabwe. */
+        ZW = 'ZW',
+        /** United Arab Emirates. */
+        AE = 'AE',
+        /** Afghanistan. */
+        AF = 'AF',
+        /** Antigua And Barbuda. */
+        AG = 'AG',
+        /** Anguilla. */
+        AI = 'AI',
+        /** Albania. */
+        AL = 'AL',
+        /** Armenia. */
+        AM = 'AM',
+        /** Netherlands Antilles. */
+        AN = 'AN',
+        /** Angola. */
+        AO = 'AO',
+        /** Argentina. */
+        AR = 'AR',
+        /** Austria. */
+        AT = 'AT',
+        /** Australia. */
+        AU = 'AU',
+        /** Aruba. */
+        AW = 'AW',
+        /** Aland Islands. */
+        AX = 'AX',
+        /** Azerbaijan. */
+        AZ = 'AZ',
+        /** Bosnia And Herzegovina. */
+        BA = 'BA',
+        /** Barbados. */
+        BB = 'BB',
+        /** Bangladesh. */
+        BD = 'BD',
+        /** Belgium. */
+        BE = 'BE',
+        /** Burkina Faso. */
+        BF = 'BF',
+        /** Bulgaria. */
+        BG = 'BG',
+        /** Bahrain. */
+        BH = 'BH',
+        /** Burundi. */
+        BI = 'BI',
+        /** Benin. */
+        BJ = 'BJ',
+        /** Saint Barthélemy. */
+        BL = 'BL',
+        /** Bermuda. */
+        BM = 'BM',
+        /** Brunei. */
+        BN = 'BN',
+        /** Bolivia. */
+        BO = 'BO',
+        /** Bonaire, Sint Eustatius and Saba. */
+        BQ = 'BQ',
+        /** Brazil. */
+        BR = 'BR',
+        /** Bahamas. */
+        BS = 'BS',
+        /** Bhutan. */
+        BT = 'BT',
+        /** Bouvet Island. */
+        BV = 'BV',
+        /** Botswana. */
+        BW = 'BW',
+        /** Belarus. */
+        BY = 'BY',
+        /** Belize. */
+        BZ = 'BZ',
+        /** Canada. */
+        CA = 'CA',
+        /** Cocos (Keeling) Islands. */
+        CC = 'CC',
+        /** Congo, The Democratic Republic Of The. */
+        CD = 'CD',
+        /** Central African Republic. */
+        CF = 'CF',
+        /** Congo. */
+        CG = 'CG',
+        /** Switzerland. */
+        CH = 'CH',
+        /** Côte d'Ivoire. */
+        CI = 'CI',
+        /** Cook Islands. */
+        CK = 'CK',
+        /** Chile. */
+        CL = 'CL',
+        /** Republic of Cameroon. */
+        CM = 'CM',
+        /** China. */
+        CN = 'CN',
+        /** Colombia. */
+        CO = 'CO',
+        /** Costa Rica. */
+        CR = 'CR',
+        /** Cuba. */
+        CU = 'CU',
+        /** Cape Verde. */
+        CV = 'CV',
+        /** Curaçao. */
+        CW = 'CW',
+        /** Christmas Island. */
+        CX = 'CX',
+        /** Cyprus. */
+        CY = 'CY',
+        /** Czech Republic. */
+        CZ = 'CZ',
+        /** Germany. */
+        DE = 'DE',
+        /** Djibouti. */
+        DJ = 'DJ',
+        /** Denmark. */
+        DK = 'DK',
+        /** Dominica. */
+        DM = 'DM',
+        /** Dominican Republic. */
+        DO = 'DO',
+        /** Algeria. */
+        DZ = 'DZ',
+        /** Ecuador. */
+        EC = 'EC',
+        /** Estonia. */
+        EE = 'EE',
+        /** Egypt. */
+        EG = 'EG',
+        /** Western Sahara. */
+        EH = 'EH',
+        /** Eritrea. */
+        ER = 'ER',
+        /** Spain. */
+        ES = 'ES',
+        /** Ethiopia. */
+        ET = 'ET',
+        /** Finland. */
+        FI = 'FI',
+        /** Fiji. */
+        FJ = 'FJ',
+        /** Falkland Islands (Malvinas). */
+        FK = 'FK',
+        /** Faroe Islands. */
+        FO = 'FO',
+        /** France. */
+        FR = 'FR',
+        /** Gabon. */
+        GA = 'GA',
+        /** United Kingdom. */
+        GB = 'GB',
+        /** Grenada. */
+        GD = 'GD',
+        /** Georgia. */
+        GE = 'GE',
+        /** French Guiana. */
+        GF = 'GF',
+        /** Guernsey. */
+        GG = 'GG',
+        /** Ghana. */
+        GH = 'GH',
+        /** Gibraltar. */
+        GI = 'GI',
+        /** Greenland. */
+        GL = 'GL',
+        /** Gambia. */
+        GM = 'GM',
+        /** Guinea. */
+        GN = 'GN',
+        /** Guadeloupe. */
+        GP = 'GP',
+        /** Equatorial Guinea. */
+        GQ = 'GQ',
+        /** Greece. */
+        GR = 'GR',
+        /** South Georgia And The South Sandwich Islands. */
+        GS = 'GS',
+        /** Guatemala. */
+        GT = 'GT',
+        /** Guinea Bissau. */
+        GW = 'GW',
+        /** Guyana. */
+        GY = 'GY',
+        /** Hong Kong. */
+        HK = 'HK',
+        /** Heard Island And Mcdonald Islands. */
+        HM = 'HM',
+        /** Honduras. */
+        HN = 'HN',
+        /** Croatia. */
+        HR = 'HR',
+        /** Haiti. */
+        HT = 'HT',
+        /** Hungary. */
+        HU = 'HU',
+        /** Indonesia. */
+        ID = 'ID',
+        /** Ireland. */
+        IE = 'IE',
+        /** Israel. */
+        IL = 'IL',
+        /** Isle Of Man. */
+        IM = 'IM',
+        /** India. */
+        IN = 'IN',
+        /** British Indian Ocean Territory. */
+        IO = 'IO',
+        /** Iraq. */
+        IQ = 'IQ',
+        /** Iran, Islamic Republic Of. */
+        IR = 'IR',
+        /** Iceland. */
+        IS = 'IS',
+        /** Italy. */
+        IT = 'IT',
+        /** Jersey. */
+        JE = 'JE',
+        /** Jamaica. */
+        JM = 'JM',
+        /** Jordan. */
+        JO = 'JO',
+        /** Japan. */
+        JP = 'JP',
+        /** Kenya. */
+        KE = 'KE',
+        /** Kyrgyzstan. */
+        KG = 'KG',
+        /** Cambodia. */
+        KH = 'KH',
+        /** Kiribati. */
+        KI = 'KI',
+        /** Comoros. */
+        KM = 'KM',
+        /** Saint Kitts And Nevis. */
+        KN = 'KN',
+        /** Korea, Democratic People's Republic Of. */
+        KP = 'KP',
+        /** South Korea. */
+        KR = 'KR',
+        /** Kuwait. */
+        KW = 'KW',
+        /** Cayman Islands. */
+        KY = 'KY',
+        /** Kazakhstan. */
+        KZ = 'KZ',
+        /** Lao People's Democratic Republic. */
+        LA = 'LA',
+        /** Lebanon. */
+        LB = 'LB',
+        /** Saint Lucia. */
+        LC = 'LC',
+        /** Liechtenstein. */
+        LI = 'LI',
+        /** Sri Lanka. */
+        LK = 'LK',
+        /** Liberia. */
+        LR = 'LR',
+        /** Lesotho. */
+        LS = 'LS',
+        /** Lithuania. */
+        LT = 'LT',
+        /** Luxembourg. */
+        LU = 'LU',
+        /** Latvia. */
+        LV = 'LV',
+        /** Libyan Arab Jamahiriya. */
+        LY = 'LY',
+        /** Morocco. */
+        MA = 'MA',
+        /** Monaco. */
+        MC = 'MC',
+        /** Moldova, Republic of. */
+        MD = 'MD',
+        /** Montenegro. */
+        ME = 'ME',
+        /** Saint Martin. */
+        MF = 'MF',
+        /** Madagascar. */
+        MG = 'MG',
+        /** Macedonia, Republic Of. */
+        MK = 'MK',
+        /** Mali. */
+        ML = 'ML',
+        /** Myanmar. */
+        MM = 'MM',
+        /** Mongolia. */
+        MN = 'MN',
+        /** Macao. */
+        MO = 'MO',
+        /** Martinique. */
+        MQ = 'MQ',
+        /** Mauritania. */
+        MR = 'MR',
+        /** Montserrat. */
+        MS = 'MS',
+        /** Malta. */
+        MT = 'MT',
+        /** Mauritius. */
+        MU = 'MU',
+        /** Maldives. */
+        MV = 'MV',
+        /** Malawi. */
+        MW = 'MW',
+        /** Mexico. */
+        MX = 'MX',
+        /** Malaysia. */
+        MY = 'MY',
+        /** Mozambique. */
+        MZ = 'MZ',
+        /** Namibia. */
+        NA = 'NA',
+        /** New Caledonia. */
+        NC = 'NC',
+        /** Niger. */
+        NE = 'NE',
+        /** Norfolk Island. */
+        NF = 'NF',
+        /** Nigeria. */
+        NG = 'NG',
+        /** Nicaragua. */
+        NI = 'NI',
+        /** Netherlands. */
+        NL = 'NL',
+        /** Norway. */
+        NO = 'NO',
+        /** Nepal. */
+        NP = 'NP',
+        /** Nauru. */
+        NR = 'NR',
+        /** Niue. */
+        NU = 'NU',
+        /** New Zealand. */
+        NZ = 'NZ',
+        /** Oman. */
+        OM = 'OM',
+        /** Panama. */
+        PA = 'PA',
+        /** Peru. */
+        PE = 'PE',
+        /** French Polynesia. */
+        PF = 'PF',
+        /** Papua New Guinea. */
+        PG = 'PG',
+        /** Philippines. */
+        PH = 'PH',
+        /** Pakistan. */
+        PK = 'PK',
+        /** Poland. */
+        PL = 'PL',
+        /** Saint Pierre And Miquelon. */
+        PM = 'PM',
+        /** Pitcairn. */
+        PN = 'PN',
+        /** Palestinian Territory, Occupied. */
+        PS = 'PS',
+        /** Portugal. */
+        PT = 'PT',
+        /** Paraguay. */
+        PY = 'PY',
+        /** Qatar. */
+        QA = 'QA',
+        /** Reunion. */
+        RE = 'RE',
+        /** Romania. */
+        RO = 'RO',
+        /** Serbia. */
+        RS = 'RS',
+        /** Russia. */
+        RU = 'RU',
+        /** Rwanda. */
+        RW = 'RW',
+        /** Saudi Arabia. */
+        SA = 'SA',
+        /** Solomon Islands. */
+        SB = 'SB',
+        /** Seychelles. */
+        SC = 'SC',
+        /** Sudan. */
+        SD = 'SD',
+        /** Sweden. */
+        SE = 'SE',
+        /** Singapore. */
+        SG = 'SG',
+        /** Saint Helena. */
+        SH = 'SH',
+        /** Slovenia. */
+        SI = 'SI',
+        /** Svalbard And Jan Mayen. */
+        SJ = 'SJ',
+        /** Slovakia. */
+        SK = 'SK',
+        /** Sierra Leone. */
+        SL = 'SL',
+        /** San Marino. */
+        SM = 'SM',
+        /** Senegal. */
+        SN = 'SN',
+        /** Somalia. */
+        SO = 'SO',
+        /** Suriname. */
+        SR = 'SR',
+        /** South Sudan. */
+        SS = 'SS',
+        /** Sao Tome And Principe. */
+        ST = 'ST',
+        /** El Salvador. */
+        SV = 'SV',
+        /** Sint Maarten. */
+        SX = 'SX',
+        /** Syria. */
+        SY = 'SY',
+        /** Swaziland. */
+        SZ = 'SZ',
+        /** Turks and Caicos Islands. */
+        TC = 'TC',
+        /** Chad. */
+        TD = 'TD',
+        /** French Southern Territories. */
+        TF = 'TF',
+        /** Togo. */
+        TG = 'TG',
+        /** Thailand. */
+        TH = 'TH',
+        /** Tajikistan. */
+        TJ = 'TJ',
+        /** Tokelau. */
+        TK = 'TK',
+        /** Timor Leste. */
+        TL = 'TL',
+        /** Turkmenistan. */
+        TM = 'TM',
+        /** Tunisia. */
+        TN = 'TN',
+        /** Tonga. */
+        TO = 'TO',
+        /** Turkey. */
+        TR = 'TR',
+        /** Trinidad and Tobago. */
+        TT = 'TT',
+        /** Tuvalu. */
+        TV = 'TV',
+        /** Taiwan. */
+        TW = 'TW',
+        /** Tanzania, United Republic Of. */
+        TZ = 'TZ',
+        /** Ukraine. */
+        UA = 'UA',
+        /** Uganda. */
+        UG = 'UG',
+        /** United States Minor Outlying Islands. */
+        UM = 'UM',
+        /** United States. */
+        US = 'US',
+        /** Uruguay. */
+        UY = 'UY',
+        /** Uzbekistan. */
+        UZ = 'UZ',
+        /** Holy See (Vatican City State). */
+        VA = 'VA',
+        /** St. Vincent. */
+        VC = 'VC',
+        /** Venezuela. */
+        VE = 'VE',
+        /** Virgin Islands, British. */
+        VG = 'VG',
+        /** Vietnam. */
+        VN = 'VN',
+        /** Vanuatu. */
+        VU = 'VU',
+        /** Wallis And Futuna. */
+        WF = 'WF',
+        /** Samoa. */
+        WS = 'WS',
+        /** Kosovo. */
+        XK = 'XK',
+        /** Yemen. */
+        YE = 'YE',
+        /** Mayotte. */
+        YT = 'YT',
+        /** South Africa. */
+        ZA = 'ZA',
+        /** Zambia. */
+        ZM = 'ZM',
+        /** Andorra. */
+        AD = 'AD',
+    }
+    //#endregion
 }

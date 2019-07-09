@@ -400,7 +400,7 @@ declare namespace ShopifyBuy {
          *   // Do something with the collection
          * });
          */
-        fetch(id: string): Promise<Collection[]>;
+        fetch(id: string): Promise<Collection>;
 
         /**
          * Fetches a single collection by ID on the shop, including products.
@@ -431,7 +431,7 @@ declare namespace ShopifyBuy {
          *   // Do something with the collections
          * });
          */
-        fetchAllWithProducts(): Promise<Collection[]>;
+        fetchAllWithProducts(): Promise<CollectionWithProducts[]>;
 
         /**
          * Fetches a collection by handle on the shop.
@@ -441,7 +441,7 @@ declare namespace ShopifyBuy {
          *   // Do something with the collection
          * });
          */
-        fetchByHandle(handle: string): Promise<Collection[]>;
+        fetchByHandle(handle: string): Promise<CollectionWithProducts>;
 
         /**
          * Fetches all collections on the shop that match the query.
@@ -487,6 +487,10 @@ declare namespace ShopifyBuy {
          * Image associated with the collection.
          */
         image: Pick<Image, 'id' | 'src' | 'altText'> | null;
+    }
+
+    export interface CollectionWithProducts extends Collection {
+        products: Product[];
     }
 
     export interface CollectionQuery extends BaseQuery {

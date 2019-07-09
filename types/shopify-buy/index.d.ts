@@ -1411,7 +1411,8 @@ declare namespace ShopifyBuy {
          * @example
          * const url = client.image.helpers.imageForSize(product.variants[0].image, {maxWidth: 50, maxHeight: 50});
          */
-        imageForSize(image: Image, options: { maxWidth: number; maxHeight: number }): string;
+        // image arg only needs a `src` prop present in the object
+        imageForSize(image: Pick<Image, 'src'>, options: { maxWidth: number; maxHeight: number }): string;
     }
     //#endregion ImageResource and friends
 

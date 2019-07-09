@@ -1479,7 +1479,7 @@ declare namespace ShopifyBuy {
     /**
      * An object specifying the query data
      */
-    export interface BaseQuery {
+    interface BaseQuery {
         /**
          * The relay `first` param. This specifies page size.
          */
@@ -1499,12 +1499,12 @@ declare namespace ShopifyBuy {
     /**
      * this is a generic connection interface that's used by others like ImageConnection
      */
-    export interface BaseConnection<E> {
+    interface BaseConnection<E> {
         edges: Array<E>;
         pageInfo: PageInfo;
     }
 
-    export interface Node {
+    interface Node {
         /**
          * Globally unique identifier.
          */

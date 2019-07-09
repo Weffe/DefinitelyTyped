@@ -346,14 +346,13 @@ declare namespace ShopifyBuy {
         selectedOptions: SelectedOption[];
     }
 
-    type ProductVariantPricePairConnectionEdge = Edge<{ price: ProductVariantPricePair }>;
+    type ProductVariantPricePairConnectionEdge = Edge<ProductVariantPricePair>;
     export interface ProductVariantPricePairConnection extends BaseConnection<ProductVariantPricePairConnectionEdge> {}
 
     /**
      * @see https://help.shopify.com/en/api/storefront-api/reference/object/productvariantpricepair
      */
     export interface ProductVariantPricePair {
-        compareAtPrice: MoneyV2;
         price: MoneyV2;
     }
 

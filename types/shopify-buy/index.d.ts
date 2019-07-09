@@ -410,7 +410,7 @@ declare namespace ShopifyBuy {
          *   // Do something with the collection
          * });
          */
-        fetchWithProducts(id: string): Promise<Collection[]>;
+        fetchWithProducts(id: string): Promise<CollectionWithProducts>;
 
         /**
          * Fetches all collections on the shop, not including products.

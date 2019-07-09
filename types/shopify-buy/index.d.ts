@@ -740,7 +740,6 @@ declare namespace ShopifyBuy {
          * If you want to complete a checkout or ensure all the fields are populated
          * and up to date, polling is required until the value is true.
          */
-
         ready: boolean;
 
         /**
@@ -889,44 +888,28 @@ declare namespace ShopifyBuy {
 
         // since a "DiscountApplication" can be a subset of ManualDiscountApplication
         // or DiscountCodeApplication or ScriptDiscountApplication
-        // or AutomaticDiscountApplication then we must specify the props as optional
+        // or AutomaticDiscountApplication then we must specify the props as optional.
+        // A discriminated union wouldn't work here as we cannot guarantee at compile
+        // time that the graphql query will only get a "AutomaticDiscountApplication"
+        // or a "ScriptDiscountApplication", etc. So optional props are the best option.
 
         /**
          * The title of the application.
-         *
-         * @example
-         * // note the use of the bang (!) operator
-         * const title = discountApplication.title!;
          */
         title?: string;
 
         /**
          * The description of the application.
-         *
-         * @example
-         * // note the use of the bang (!) operator
-         * const desc = discountApplication.description!;
-         *
-         * // heres how to use desc if you know it isnt going to be null
-         * const desc = discountApplication.description! as string;
          */
         description?: string | null;
 
         /**
          * The string identifying the discount code that was used at the time of application.
-         *
-         * @example
-         * // note the use of the bang (!) operator
-         * const code = discountApplication.code!;
          */
         code?: string;
 
         /**
          * Specifies whether the discount code was applied successfully.
-         *
-         * @example
-         * // note the use of the bang (!) operator
-         * const isApplicable = discountApplication.applicable!;
          */
         applicable?: boolean;
     }
@@ -1022,7 +1005,7 @@ declare namespace ShopifyBuy {
         /**
          * A formatted version of the address including the customer's company and name
          */
-        formatted: string;
+        formatted: string[];
 
         /**
          * The first name of the customer.

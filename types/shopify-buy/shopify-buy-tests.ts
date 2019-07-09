@@ -1,408 +1,1076 @@
-/// <reference types="jquery" />
-
-/* Build new ShopifyBuy client
-============================================================ */
-let client = ShopifyBuy.buildClient({
+// Initializing the Client
+const client = ShopifyBuy.Client.buildClient({
     domain: 'buyapitypestest.myshopify.com',
-    storefrontAccessToken: '9f30a6806b613e0cb551b7db59c5ca02'
+    storefrontAccessToken: '9f30a6806b613e0cb551b7db59c5ca02',
 });
 
-var product : ShopifyBuy.Product;
-var cart : ShopifyBuy.Cart;
-var cartLineItemCount : number;
-if(localStorage.getItem('lastCartId')) {
-    client.checkout.fetch(localStorage.getItem('lastCartId')).then(function(remoteCart : ShopifyBuy.Cart) {
-        cart = remoteCart;
-        cartLineItemCount = cart.lineItems.length;
-        renderCartItems();
+//#region fetchNextPage
+//-------------------------------
+const fakeProducts: ShopifyBuy.Product[] = [];
+const nextFakeProducts: ShopifyBuy.Product[] = client.fetchNextPage(fakeProducts);
+
+const fakeCollection: ShopifyBuy.Collection[] = [];
+const nextFakeCollection: ShopifyBuy.Collection[] = client.fetchNextPage(fakeCollection);
+
+const fakeShop: ShopifyBuy.Shop[] = [];
+const nextFakeShop: ShopifyBuy.Shop[] = client.fetchNextPage(fakeShop);
+
+const fakeCheckout: ShopifyBuy.Checkout[] = [];
+const nextFakeCheckout: ShopifyBuy.Checkout[] = client.fetchNextPage(fakeCheckout);
+
+const fakeImage: ShopifyBuy.Image[] = [];
+const nextFakeImage: ShopifyBuy.Image[] = client.fetchNextPage(fakeImage);
+//#endregion fetchNextPage
+
+//#region Product Methods
+//-------------------------------
+client.product.fetch('123').then(product => {
+    const availableForSale: boolean = product.availableForSale;
+    const createdAt: string = product.createdAt;
+    const updatedAt: string = product.updatedAt;
+    const descriptionHtml: string = product.descriptionHtml;
+    const description: string = product.description;
+    const handle: string = product.handle;
+    const productType = product.productType;
+    const title: string = product.title;
+    const vendor: string = product.vendor;
+    const publishedAt: string = product.publishedAt;
+    const onlineStoreUrl: string | null = product.onlineStoreUrl;
+    const id: string = product.id;
+
+    const options = product.options;
+    const images = product.images;
+    const variants = product.variants;
+
+    // making sure we can loop over the options array
+    for (let opt of options) {
+        const { id, name, values } = opt;
+
+        let concatValues = '';
+        for (let value of values) {
+            concatValues += value;
+        }
+    }
+
+    const hasNextPage = images.pageInfo.hasNextPage;
+    const hasPreviousPage = images.pageInfo.hasPreviousPage;
+
+    images.edges.forEach(image => {
+        const cursor = image.cursor;
+        const { altText, id, src } = image.node;
     });
-} else {
-    client.checkout.create().then(function (newCart : ShopifyBuy.Cart) {
-        cart = newCart;
-        localStorage.setItem('lastCartId', ""+cart.id);
-        cartLineItemCount = 0;
+
+    const a = variants.pageInfo.hasNextPage;
+    const b = variants.pageInfo.hasPreviousPage;
+
+    variants.edges.forEach(variant => {
+        const cursor = variant.cursor;
+        const {
+            available,
+            compareAtPrice,
+            id,
+            image,
+            presentmentPrices,
+            price,
+            selectedOptions,
+            sku,
+            title,
+            weight,
+        } = variant.node;
     });
-}
-
-var previousFocusItem : any;
-
-/* Fetch product and init
-============================================================ */
-client.product.fetch('3614436099').then(function (fetchedProduct : ShopifyBuy.Product) {
-    product = fetchedProduct;
-    var selectedVariant : ShopifyBuy.ProductVariant = product.selectedVariant;
-    var selectedVariantImage : any = product.selectedVariantImage;
-    var currentOptions : ShopifyBuy.Option[] = product.options;
-
-    var variantSelectors = generateSelectors(product);
-    $('.variant-selectors').html(""+variantSelectors);
-
-    updateProductTitle(product.title);
-    updateVariantImage(selectedVariantImage);
-    updateVariantTitle(selectedVariant);
-    updateVariantPrice(selectedVariant);
-    attachOnVariantSelectListeners(product);
-    updateCartTabButton();
-    bindEventListeners();
 });
 
-/* Generate DOM elements for variant selectors
-============================================================ */
-function generateSelectors(product : ShopifyBuy.Product) {
-    var elements = product.options.map(function(option : ShopifyBuy.Option) {
-        var optionsHtml = option.values.map(function(value : any) {
-            return '<option value="' + value + '">' + value + '</option>';
+client.product.fetchAll(5).then(products => {
+    products.forEach(product => {
+        const {
+            availableForSale,
+            createdAt,
+            updatedAt,
+            descriptionHtml,
+            description,
+            handle,
+            productType,
+            title,
+            vendor,
+            publishedAt,
+            onlineStoreUrl,
+            options,
+            images,
+            variants,
+            id,
+        } = product;
+    });
+});
+
+client.product.fetchByHandle('my-product').then(product => {
+    const {
+        availableForSale,
+        createdAt,
+        updatedAt,
+        descriptionHtml,
+        description,
+        handle,
+        productType,
+        title,
+        vendor,
+        publishedAt,
+        onlineStoreUrl,
+        options,
+        images,
+        variants,
+        id,
+    } = product;
+});
+
+client.product.fetchMultiple(['1', '2', '3']).then(products => {
+    products.forEach(product => {
+        const {
+            availableForSale,
+            createdAt,
+            updatedAt,
+            descriptionHtml,
+            description,
+            handle,
+            productType,
+            title,
+            vendor,
+            publishedAt,
+            onlineStoreUrl,
+            options,
+            images,
+            variants,
+            id,
+        } = product;
+    });
+});
+
+const productQry: ShopifyBuy.ProductQuery = {
+    first: 20,
+    sortKey: ShopifyBuy.ProductSortKeys.PRICE,
+    reverse: true,
+    query: 'test',
+};
+client.product.fetchQuery(productQry).then(products => {
+    products.forEach(product => {
+        const {
+            availableForSale,
+            createdAt,
+            updatedAt,
+            descriptionHtml,
+            description,
+            handle,
+            productType,
+            title,
+            vendor,
+            publishedAt,
+            onlineStoreUrl,
+            options,
+            images,
+            variants,
+            id,
+        } = product;
+    });
+});
+
+// testing variantForOptions
+client.product.fetch('123').then(product => {
+    const variant = client.product.helpers.variantForOptions(product, {
+        size: 'small',
+    });
+
+    const { title, price, presentmentPrices, weight, sku, available, compareAtPrice, image, selectedOptions } = variant;
+
+    presentmentPrices.edges.forEach(edge => {
+        const amount = edge.node.price.amount;
+        const currencyCode = edge.node.price.currencyCode;
+    });
+});
+//#endregion Product Methods
+
+//#region Collection Methods
+//-------------------------------
+client.collection.fetch('123').then(collection => {
+    const { description, descriptionHtml, image, id, handle, title, updatedAt } = collection;
+
+    if (image) {
+        const { altText, id, src } = image;
+
+        if (altText) {
+            altText.charAt(3);
+        }
+
+        if (id) {
+            id.charAt(3);
+        }
+
+        src.charAt(3);
+    }
+});
+
+client.collection.fetchAll(5).then(collections => {
+    collections.forEach(collection => {
+        const { description, descriptionHtml, image, id, handle, title, updatedAt } = collection;
+
+        if (image) {
+            const { altText, id, src } = image;
+
+            if (altText) {
+                altText.charAt(3);
+            }
+
+            if (id) {
+                id.charAt(3);
+            }
+
+            src.charAt(3);
+        }
+    });
+});
+
+client.collection.fetchAllWithProducts().then(collections => {
+    collections.forEach(collection => {
+        const { description, descriptionHtml, image, id, handle, title, updatedAt, products } = collection;
+
+        if (image) {
+            const { altText, id, src } = image;
+
+            if (altText) {
+                altText.charAt(3);
+            }
+
+            if (id) {
+                id.charAt(3);
+            }
+
+            src.charAt(3);
+        }
+
+        products.forEach(product => {
+            const {
+                availableForSale,
+                createdAt,
+                updatedAt,
+                descriptionHtml,
+                description,
+                handle,
+                productType,
+                title,
+                vendor,
+                publishedAt,
+                onlineStoreUrl,
+                options,
+                images,
+                variants,
+                id,
+            } = product;
+
+            options.forEach(opt => {
+                const { id, name, values } = opt;
+
+                values.map(v => v.charAt(1));
+            });
+
+            images.edges.forEach(edge => {
+                const { cursor, node } = edge;
+
+                cursor.charAt(1);
+
+                const { altText, id, src } = node;
+
+                if (altText) {
+                    altText.charAt(1);
+                }
+
+                if (id) {
+                    id.charAt(1);
+                }
+
+                src.charAt(2);
+            });
+
+            variants.edges.forEach(edge => {
+                const { cursor, node } = edge;
+
+                cursor.charAt(1);
+
+                const {
+                    available,
+                    compareAtPrice,
+                    selectedOptions,
+                    sku,
+                    title,
+                    weight,
+                    id,
+                    image,
+                    presentmentPrices,
+                    price,
+                } = node;
+
+                selectedOptions.forEach(opt => {
+                    const { name, value } = opt;
+                });
+
+                presentmentPrices.edges.forEach(edge => {
+                    const { price } = edge.node;
+                    const { amount, currencyCode } = price;
+
+                    const foo = currencyCode === ShopifyBuy.CurrencyCode.BZD;
+                });
+            });
+        });
+    });
+});
+
+client.collection.fetchByHandle('my-product').then(collection => {
+    const { description, descriptionHtml, image, id, handle, title, updatedAt } = collection;
+
+    if (image) {
+        const { altText, id, src } = image;
+
+        if (altText) {
+            altText.charAt(3);
+        }
+
+        if (id) {
+            id.charAt(3);
+        }
+
+        src.charAt(3);
+    }
+});
+
+const collectionQry: ShopifyBuy.CollectionQuery = {
+    first: 5,
+    query: 'test',
+    reverse: false,
+    sortKey: ShopifyBuy.CollectionSortKeys.RELEVANCE,
+};
+client.collection.fetchQuery(collectionQry).then(collections => {
+    collections.forEach(collection => {
+        const { description, descriptionHtml, image, id, handle, title, updatedAt } = collection;
+
+        if (image) {
+            const { altText, id, src } = image;
+
+            if (altText) {
+                altText.charAt(3);
+            }
+
+            if (id) {
+                id.charAt(3);
+            }
+
+            src.charAt(3);
+        }
+    });
+});
+
+client.collection.fetchWithProducts('123').then(collection => {
+    const { description, descriptionHtml, image, id, handle, title, updatedAt, products } = collection;
+
+    if (image) {
+        const { altText, id, src } = image;
+
+        if (altText) {
+            altText.charAt(3);
+        }
+
+        if (id) {
+            id.charAt(3);
+        }
+
+        src.charAt(3);
+    }
+
+    products.forEach(product => {
+        const {
+            availableForSale,
+            createdAt,
+            updatedAt,
+            descriptionHtml,
+            description,
+            handle,
+            productType,
+            title,
+            vendor,
+            publishedAt,
+            onlineStoreUrl,
+            options,
+            images,
+            variants,
+            id,
+        } = product;
+
+        options.forEach(opt => {
+            const { id, name, values } = opt;
+
+            values.map(v => v.charAt(1));
         });
 
-        return '<div class="shopify-select">\
-                <select class="select" name="' + option.name + '">' + optionsHtml + '</select>\
-                <svg class="shopify-select-icon" viewBox="0 0 24 24"><path d="M21 5.176l-9.086 9.353L3 5.176.686 7.647 12 19.382 23.314 7.647 21 5.176z"></path></svg>\
-                </div>'
-    });
-    return elements;
-}
+        images.edges.forEach(edge => {
+            const { cursor, node } = edge;
 
-/* Bind Event Listeners
-============================================================ */
-function bindEventListeners() {
-    /* cart close button listener */
-    $('.cart .btn--close').on('click', closeCart);
+            cursor.charAt(1);
 
-    /* click away listener to close cart */
-    $(document).on('click', function(evt) {
-        if((!$(evt.target).closest('.cart').length) && (!$(evt.target).closest('.js-prevent-cart-listener').length)) {
-        closeCart();
-        }
-    });
+            const { altText, id, src } = node;
 
-    /* escape key handler */
-    var ESCAPE_KEYCODE = 27;
-    $(document).on('keydown', function (evt) {
-        if (evt.which === ESCAPE_KEYCODE) {
-        if (previousFocusItem) {
-            $(previousFocusItem).focus();
-            previousFocusItem = ''
-        }
-        closeCart();
-        }
-    });
+            if (altText) {
+                altText.charAt(1);
+            }
 
-    /* checkout button click listener */
-    $('.btn--cart-checkout').on('click', function () {
-        window.open(cart.checkoutUrl, '_self');
-    });
+            if (id) {
+                id.charAt(1);
+            }
 
-    /* buy button click listener */
-    $('.buy-button').on('click', buyButtonClickHandler);
+            src.charAt(2);
+        });
 
-    /* increment quantity click listener */
-    $('.cart').on('click', '.quantity-increment', function () {
-        var variantId = $(this).data('variant-id');
-        incrementQuantity(variantId);
-    });
+        variants.edges.forEach(edge => {
+            const { cursor, node } = edge;
 
-    /* decrement quantity click listener */
-    $('.cart').on('click', '.quantity-decrement', function() {
-        var variantId = $(this).data('variant-id');
-        decrementQuantity(variantId);
-    });
+            cursor.charAt(1);
 
-    /* update quantity field listener */
-    $('.cart').on('keyup', '.cart-item__quantity', debounce(fieldQuantityHandler, 250));
+            const {
+                available,
+                compareAtPrice,
+                selectedOptions,
+                sku,
+                title,
+                weight,
+                id,
+                image,
+                presentmentPrices,
+                price,
+            } = node;
 
-    /* cart tab click listener */
-    $('.btn--cart-tab').click(() => {
-        setPreviousFocusItem(this);
-        openCart();
-    });
-}
-
-
-/* Variant option change handler
-============================================================ */
-function attachOnVariantSelectListeners(product : ShopifyBuy.Product) {
-    $('.variant-selectors').on('change', 'select', function(event) {
-        var $element : any = $(event.target);
-        var name : string = $element.attr('name');
-        var value : string = $element.val();
-        product.options.filter(function(option : ShopifyBuy.Option) {
-            return option.name === name;
-        })[0].selected = value;
-
-        var selectedVariant : ShopifyBuy.ProductVariant = product.selectedVariant;
-        var selectedVariantImage : any = product.selectedVariantImage;
-        updateProductTitle(product.title);
-        updateVariantImage(selectedVariantImage);
-        updateVariantTitle(selectedVariant);
-        updateVariantPrice(selectedVariant);
-    });
-}
-
-/* Update product title
-============================================================ */
-function updateProductTitle(title : string) {
-    $('#buy-button-1 .product-title').text(title);
-}
-
-/* Update product image based on selected variant
-============================================================ */
-function updateVariantImage(image : any) {
-    var src = (image) ? image.src : ShopifyBuy.NO_IMAGE_URI;
-
-    $('#buy-button-1 .variant-image').attr('src', src);
-}
-
-/* Update product variant title based on selected variant
-============================================================ */
-function updateVariantTitle(variant : ShopifyBuy.ProductVariant) {
-    $('#buy-button-1 .variant-title').text(variant.title);
-}
-
-/* Update product variant price based on selected variant
-============================================================ */
-function updateVariantPrice(variant : ShopifyBuy.ProductVariant) {
-    $('#buy-button-1 .variant-price').text('$' + variant.price);
-}
-
-/* Attach and control listeners onto buy button
-============================================================ */
-function buyButtonClickHandler(evt : any) {
-    evt.preventDefault();
-    var id : string | number = product.selectedVariant.id;
-    var quantity : number;
-    var cartLineItem : ShopifyBuy.LineItem = findCartItemByVariantId(id);
-
-    quantity = cartLineItem ? cartLineItem.quantity + 1 : 1;
-
-    addOrUpdateVariant(product.selectedVariant, quantity);
-    setPreviousFocusItem(evt.target);
-    $('#checkout').focus();
-}
-
-/* Update product variant quantity in cart
-============================================================ */
-function updateQuantity(fn : Function, variantId : string | number) {
-    var variant : ShopifyBuy.ProductVariant = product.variants.filter(function (variant : ShopifyBuy.ProductVariant) {
-        return (variant.id === variantId);
-    })[0];
-    var quantity : number;
-    var cartLineItem : ShopifyBuy.LineItem = findCartItemByVariantId(variant.id);
-    if (cartLineItem) {
-        quantity = fn(cartLineItem.quantity);
-        updateVariantInCart(cartLineItem, quantity);
-    }
-}
-
-/* Decrease quantity amount by 1
-============================================================ */
-function decrementQuantity(variantId : string | number) {
-    updateQuantity(function(quantity : number) {
-        return quantity - 1;
-    }, variantId);
-}
-
-/* Increase quantity amount by 1
-============================================================ */
-function incrementQuantity(variantId : string | number) {
-    updateQuantity(function(quantity : number) {
-        return quantity + 1;
-    }, variantId);
-}
-
-/* Update product variant quantity in cart through input field
-============================================================ */
-function fieldQuantityHandler(evt : any) {
-    var variantId : string | number = parseInt($(this).closest('.cart-item').attr('data-variant-id'), 10);
-    var variant : ShopifyBuy.ProductVariant = product.variants.filter(function (variant : ShopifyBuy.ProductVariant) {
-        return (variant.id === variantId);
-    })[0];
-    var cartLineItem : ShopifyBuy.LineItem = findCartItemByVariantId(variant.id);
-    var quantity : number = evt.target.value;
-    if (cartLineItem) {
-        updateVariantInCart(cartLineItem, quantity);
-    }
-}
-
-/* Debounce taken from _.js
-============================================================ */
-function debounce(func : any, wait : number, immediate? : number) {
-    var timeout : number;
-    return function() {
-        var context = this, args = arguments;
-        var later = function() {
-        timeout = null;
-        if (!immediate) func.apply(context, args);
-        };
-        var callNow = immediate && !timeout;
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-        if (callNow) func.apply(context, args);
-    }
-}
-
-/* Open Cart
-============================================================ */
-function openCart() {
-    $('.cart').addClass('js-active');
-}
-
-/* Close Cart
-============================================================ */
-function closeCart() {
-    $('.cart').removeClass('js-active');
-    $('.overlay').removeClass('js-active');
-}
-
-/* Find Cart Line Item By Variant Id
-============================================================ */
-function findCartItemByVariantId(variantId : string | number) {
-    return cart.lineItems.filter(function (item) {
-        return (item.variant_id === variantId);
-    })[0];
-}
-
-/* Determine action for variant adding/updating/removing
-============================================================ */
-function addOrUpdateVariant(variant : ShopifyBuy.ProductVariant, quantity : number) {
-    openCart();
-    var cartLineItem : ShopifyBuy.LineItem = findCartItemByVariantId(variant.id);
-
-    if (cartLineItem) {
-        updateVariantInCart(cartLineItem, quantity);
-    } else {
-        addVariantToCart(variant, quantity);
-    }
-
-    updateCartTabButton();
-}
-
-/* Update details for item already in cart. Remove if necessary
-============================================================ */
-function updateVariantInCart(cartLineItem : ShopifyBuy.LineItem, quantity : number) {
-    var variantId : string | number = cartLineItem.variant_id;
-    var cartLength : number = cart.lineItems.length;
-    let lineItemVariant: ShopifyBuy.AttributeInput = {
-        id: cartLineItem.id,
-        quantity
-    };
-    client.checkout.updateLineItem(cartLineItem.id, [lineItemVariant]).then(function(updatedCart : ShopifyBuy.Cart) {
-        var $cartItem = $('.cart').find('.cart-item[data-variant-id="' + variantId + '"]');
-        if (updatedCart.lineItems.length >= cartLength) {
-            $cartItem.find('.cart-item__quantity').val(cartLineItem.quantity);
-            $cartItem.find('.cart-item__price').text(formatAsMoney(cartLineItem.line_price));
-        } else {
-            $cartItem.addClass('js-hidden').bind('transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd', function() {
-                $cartItem.remove();
+            selectedOptions.forEach(opt => {
+                const { name, value } = opt;
             });
-        }
 
-        updateCartTabButton();
-        updateTotalCartPricing();
-        if (updatedCart.lineItems.length < 1) {
-            closeCart();
-        }
-    }).catch(function (errors : string) {
-        console.log('Fail');
-        console.error(errors);
+            presentmentPrices.edges.forEach(edge => {
+                const { price } = edge.node;
+                const { amount, currencyCode } = price;
+
+                const foo = currencyCode === ShopifyBuy.CurrencyCode.BZD;
+            });
+        });
     });
-}
+});
+//#endregion Collection Methods
 
-/* Add 'quantity' amount of product 'variant' to cart
-============================================================ */
-function addVariantToCart(variant : ShopifyBuy.ProductVariant, quantity : number) {
-    openCart();
+//#region Image Methods
+//-------------------------------
+// testing ImageHelpers
+client.product.fetch('123').then(product => {
+    const img = product.variants.edges[0].node.image;
 
-    client.checkout.addVariants({ variant: variant, quantity: quantity }).then(function() {
-        var cartItem : ShopifyBuy.LineItem = cart.lineItems.filter(function (item : ShopifyBuy.LineItem ) {
-            return (item.variant_id === variant.id);
-        })[0];
-        var $cartItem = renderCartItem(cartItem);
-        var $cartItemContainer = $('.cart-item-container');
-        $cartItemContainer.append($cartItem);
-        setTimeout(function () {
-            $cartItemContainer.find('.js-hidden').removeClass('js-hidden');
-        }, 0)
-
-    }).catch(function (errors : string) {
-        console.log('Fail');
-        console.error(errors);
-    });
-
-    updateTotalCartPricing();
-    updateCartTabButton();
-}
-
-/* Return required markup for single item rendering
-============================================================ */
-function renderCartItem(lineItem : ShopifyBuy.LineItem) {
-    var lineItemEmptyTemplate = $('#CartItemTemplate').html();
-    var $lineItemTemplate = $(lineItemEmptyTemplate);
-    var itemImage = lineItem.image.src;
-    $lineItemTemplate.attr('data-variant-id', lineItem.variant_id);
-    $lineItemTemplate.addClass('js-hidden');
-    $lineItemTemplate.find('.cart-item__img').css('background-image', 'url(' + itemImage + ')');
-    $lineItemTemplate.find('.cart-item__title').text(lineItem.title);
-    $lineItemTemplate.find('.cart-item__variant-title').text(lineItem.variant_title);
-    $lineItemTemplate.find('.cart-item__price').text(formatAsMoney(lineItem.line_price));
-    $lineItemTemplate.find('.cart-item__quantity').attr('value', lineItem.quantity);
-    $lineItemTemplate.find('.quantity-decrement').attr('data-variant-id', lineItem.variant_id);
-    $lineItemTemplate.find('.quantity-increment').attr('data-variant-id', lineItem.variant_id);
-
-    return $lineItemTemplate;
-}
-
-/* Render the line items currently in the cart
-============================================================ */
-function renderCartItems() {
-    var $cartItemContainer = $('.cart-item-container');
-    $cartItemContainer.empty();
-    var lineItemEmptyTemplate = $('#CartItemTemplate').html();
-    var $cartLineItems = cart.lineItems.map(function (lineItem, index) {
-        return renderCartItem(lineItem);
-    });
-    $cartItemContainer.append(...$cartLineItems);
-
-    setTimeout(function () {
-        $cartItemContainer.find('.js-hidden').removeClass('js-hidden');
-    }, 0)
-    updateTotalCartPricing();
-}
-
-/* Update Total Cart Pricing
-============================================================ */
-function updateTotalCartPricing() {
-    $('.cart .pricing').text(formatAsMoney(cart.subtotalPrice));
-}
-
-/* Format amount as currency
-============================================================ */
-function formatAsMoney(amount : string, currency? : string, thousandSeparator? : string, decimalSeparator? : string , localeDecimalSeparator? : string) {
-    currency = currency || '$';
-    thousandSeparator = thousandSeparator || ',';
-    decimalSeparator = decimalSeparator || '.';
-    localeDecimalSeparator = localeDecimalSeparator || '.';
-    var regex = new RegExp('(\\d)(?=(\\d{3})+\\.)', 'g');
-
-    return currency + parseFloat(amount).toFixed(2)
-        .replace(localeDecimalSeparator, decimalSeparator)
-        .replace(regex, '$1' + thousandSeparator)
-        .toString();
-}
-
-/* Update cart tab button
-============================================================ */
-function updateCartTabButton() {
-    if (cart.lineItems.length > 0) {
-        $('.btn--cart-tab .btn__counter').html(""+cart.lineItemCount);
-        $('.btn--cart-tab').addClass('js-active');
-    } else {
-        $('.btn--cart-tab').removeClass('js-active');
-        $('.cart').removeClass('js-active');
+    if (img) {
+        const newImgSrc: string = client.image.helpers.imageForSize(img, { maxWidth: 50, maxHeight: 50 });
     }
-}
+});
+//#endregion Image Methods
 
-/* Set previously focused item for escape handler
-============================================================ */
-function setPreviousFocusItem(item : ShopifyBuy.LineItem) {
-    previousFocusItem = item;
-}
+//#region Shop Methods
+//-------------------------------
+client.shop.fetchInfo().then(shop => {
+    const { currencyCode, description, moneyFormat, name, paymentSettings, primaryDomain } = shop;
+
+    if (currencyCode === ShopifyBuy.CurrencyCode.AFN) {
+        return;
+    }
+
+    for (let c of paymentSettings.enabledPresentmentCurrencies) {
+        if (c === ShopifyBuy.CurrencyCode.ANG) {
+            return;
+        }
+    }
+
+    const { host, sslEnabled, url } = primaryDomain;
+});
+
+client.shop.fetchPolicies().then(policies => {
+    const { privacyPolicy, refundPolicy, termsOfService } = policies;
+
+    if (privacyPolicy) {
+        const { body, url, title, id } = privacyPolicy;
+    }
+    if (refundPolicy) {
+        const { body, url, title, id } = refundPolicy;
+    }
+    if (termsOfService) {
+        const { body, url, title, id } = termsOfService;
+    }
+});
+//#endregion Shop Methods
+
+//#region Checkout Methods
+//-------------------------------
+client.checkout.addDiscount('123', '15off').then(checkout => {
+    const {
+        id,
+        appliedGiftCards,
+        orderStatusUrl,
+        updatedAt,
+        completedAt,
+        createdAt,
+        currencyCode,
+        customAttributes,
+        discountApplications,
+        email,
+        lineItems,
+        lineItemsSubtotalPrice,
+        note,
+        order,
+        paymentDue,
+        paymentDueV2,
+        ready,
+        requiresShipping,
+        shippingAddress,
+        shippingLine,
+        taxExempt,
+        taxesIncluded,
+        totalPrice,
+        totalPriceV2,
+        totalTax,
+        totalTaxV2,
+        webUrl,
+    } = checkout;
+
+    appliedGiftCards.forEach(appliedGiftCard => {
+        const { id, amountUsedV2, balanceV2, lastCharacters, presentmentAmountUsed } = appliedGiftCard;
+
+        if (amountUsedV2) {
+            const { currencyCode, amount } = amountUsedV2;
+            const foo = currencyCode === ShopifyBuy.CurrencyCode.BAM;
+        }
+
+        if (balanceV2) {
+            const { currencyCode, amount } = balanceV2;
+            const foo = currencyCode === ShopifyBuy.CurrencyCode.HKD;
+        }
+
+        if (presentmentAmountUsed) {
+            const { currencyCode, amount } = presentmentAmountUsed;
+            const foo = currencyCode === ShopifyBuy.CurrencyCode.VND;
+        }
+    });
+
+    const x = currencyCode === ShopifyBuy.CurrencyCode.YER;
+
+    customAttributes.forEach(attr => {
+        const { key, value } = attr;
+    });
+
+    const { hasNextPage, hasPreviousPage } = discountApplications.pageInfo;
+
+    discountApplications.edges.forEach(edge => {
+        const { title, description, allocationMethod, applicable, code, targetSelection, targetType } = edge.node;
+
+        if (title) {
+            title.charAt(1);
+        }
+
+        if (description) {
+            description.charAt(1);
+        }
+
+        if (code) {
+            code.charAt(1);
+        }
+
+        const x = allocationMethod === ShopifyBuy.DiscountApplicationAllocationMethod.EACH;
+        const y = targetSelection === ShopifyBuy.DiscountApplicationTargetSelection.ENTITLED;
+        const z = targetType === ShopifyBuy.DiscountApplicationTargetType.SHIPPING_LINE;
+    });
+
+    lineItems.edges.forEach(edge => {
+        const { cursor, node } = edge;
+
+        const { id, customAttributes, discountAllocations, quantity, title, variant } = node;
+
+        customAttributes.forEach(attr => {
+            const { key, value } = attr;
+        });
+
+        discountAllocations.forEach(discountAllocation => {
+            const { allocatedAmount, discountApplication } = discountAllocation;
+
+            allocatedAmount.amount.toFixed(3);
+            allocatedAmount.currencyCode === ShopifyBuy.CurrencyCode.CAD;
+
+            const {
+                title,
+                allocationMethod,
+                code,
+                targetSelection,
+                targetType,
+                applicable,
+                description,
+            } = discountApplication;
+        });
+    });
+
+    lineItemsSubtotalPrice.amount.toFixed(3);
+    lineItemsSubtotalPrice.currencyCode === ShopifyBuy.CurrencyCode.CAD;
+
+    if (order) {
+        const {
+            id,
+            lineItems,
+            shippingAddress,
+            totalPrice,
+            totalPriceV2,
+            totalTax,
+            totalTaxV2,
+            currencyCode,
+            customerUrl,
+            orderNumber,
+            processedAt,
+            subtotalPrice,
+            subtotalPriceV2,
+            totalRefunded,
+            totalRefundedV2,
+            totalShippingPrice,
+            totalShippingPriceV2,
+        } = order;
+
+        lineItems.edges.forEach(edge => {
+            const { cursor, node } = edge;
+            const { variant, title, quantity, discountAllocations, customAttributes } = node;
+        });
+    }
+
+    paymentDueV2.amount.toFixed(3);
+    paymentDueV2.currencyCode === ShopifyBuy.CurrencyCode.CRC;
+
+    if (shippingAddress) {
+        const {
+            id,
+            name,
+            address1,
+            address2,
+            city,
+            company,
+            country,
+            countryCode,
+            firstName,
+            formatted,
+            lastName,
+            latitude,
+            longitude,
+            phone,
+            province,
+            provinceCode,
+            zip,
+        } = shippingAddress;
+
+        countryCode === ShopifyBuy.CountryCode.US;
+    }
+
+    if (shippingLine) {
+        const { title, price, handle } = shippingLine;
+    }
+});
+
+client.checkout.addGiftCards('123', ['10off', '20off']).then(checkout => {
+    const {
+        id,
+        appliedGiftCards,
+        orderStatusUrl,
+        updatedAt,
+        completedAt,
+        createdAt,
+        currencyCode,
+        customAttributes,
+        discountApplications,
+        email,
+        lineItems,
+        lineItemsSubtotalPrice,
+        note,
+        order,
+        paymentDue,
+        paymentDueV2,
+        ready,
+        requiresShipping,
+        shippingAddress,
+        shippingLine,
+        taxExempt,
+        taxesIncluded,
+        totalPrice,
+        totalPriceV2,
+        totalTax,
+        totalTaxV2,
+        webUrl,
+    } = checkout;
+});
+
+// just pulling out the param type for the create options
+type createOptionsType = Parameters<ShopifyBuy.Client['checkout']['create']>;
+const createOptions: createOptionsType['0'] = {
+    customAttributes: [],
+    email: 'me@example.com',
+    shippingAddress: {
+        address1: '123 Cat Road',
+        address2: null,
+        city: 'Cat Land',
+        company: 'Catmart',
+        country: 'Canada',
+        firstName: 'Meow',
+        formatted: ['Catmart', '123 Cat Road', 'Cat Land ON M3O 0W1', 'Canada'],
+        lastName: 'Meowington',
+        latitude: null,
+        longitude: null,
+        phone: '4161234566',
+        province: 'Ontario',
+        zip: 'M3O 0W1',
+        name: 'Meow Meowington',
+        countryCode: ShopifyBuy.CountryCode.US,
+        provinceCode: 'ON',
+        id: 'Z2lkOi8vc2hvcGlmeSsiujh8aQJbnkl9Qcm9kdWN0VmaJKN8flqAnq8TEwNjA2NDU4NA==',
+    },
+    lineItems: [],
+    note: 'hello',
+};
+
+client.checkout.create(createOptions).then(checkout => {
+    const {
+        id,
+        appliedGiftCards,
+        orderStatusUrl,
+        updatedAt,
+        completedAt,
+        createdAt,
+        currencyCode,
+        customAttributes,
+        discountApplications,
+        email,
+        lineItems,
+        lineItemsSubtotalPrice,
+        note,
+        order,
+        paymentDue,
+        paymentDueV2,
+        ready,
+        requiresShipping,
+        shippingAddress,
+        shippingLine,
+        taxExempt,
+        taxesIncluded,
+        totalPrice,
+        totalPriceV2,
+        totalTax,
+        totalTaxV2,
+        webUrl,
+    } = checkout;
+});
+
+client.checkout.fetch('123').then(checkout => {
+    const {
+        id,
+        appliedGiftCards,
+        orderStatusUrl,
+        updatedAt,
+        completedAt,
+        createdAt,
+        currencyCode,
+        customAttributes,
+        discountApplications,
+        email,
+        lineItems,
+        lineItemsSubtotalPrice,
+        note,
+        order,
+        paymentDue,
+        paymentDueV2,
+        ready,
+        requiresShipping,
+        shippingAddress,
+        shippingLine,
+        taxExempt,
+        taxesIncluded,
+        totalPrice,
+        totalPriceV2,
+        totalTax,
+        totalTaxV2,
+        webUrl,
+    } = checkout;
+});
+
+client.checkout.removeDiscount('123').then(checkout => {
+    const {
+        id,
+        appliedGiftCards,
+        orderStatusUrl,
+        updatedAt,
+        completedAt,
+        createdAt,
+        currencyCode,
+        customAttributes,
+        discountApplications,
+        email,
+        lineItems,
+        lineItemsSubtotalPrice,
+        note,
+        order,
+        paymentDue,
+        paymentDueV2,
+        ready,
+        requiresShipping,
+        shippingAddress,
+        shippingLine,
+        taxExempt,
+        taxesIncluded,
+        totalPrice,
+        totalPriceV2,
+        totalTax,
+        totalTaxV2,
+        webUrl,
+    } = checkout;
+});
+
+client.checkout.removeGiftCard('123', 'XYZ').then(checkout => {
+    const {
+        id,
+        appliedGiftCards,
+        orderStatusUrl,
+        updatedAt,
+        completedAt,
+        createdAt,
+        currencyCode,
+        customAttributes,
+        discountApplications,
+        email,
+        lineItems,
+        lineItemsSubtotalPrice,
+        note,
+        order,
+        paymentDue,
+        paymentDueV2,
+        ready,
+        requiresShipping,
+        shippingAddress,
+        shippingLine,
+        taxExempt,
+        taxesIncluded,
+        totalPrice,
+        totalPriceV2,
+        totalTax,
+        totalTaxV2,
+        webUrl,
+    } = checkout;
+});
+
+client.checkout.removeLineItems('123', ['A', 'B']).then(checkout => {
+    const {
+        id,
+        appliedGiftCards,
+        orderStatusUrl,
+        updatedAt,
+        completedAt,
+        createdAt,
+        currencyCode,
+        customAttributes,
+        discountApplications,
+        email,
+        lineItems,
+        lineItemsSubtotalPrice,
+        note,
+        order,
+        paymentDue,
+        paymentDueV2,
+        ready,
+        requiresShipping,
+        shippingAddress,
+        shippingLine,
+        taxExempt,
+        taxesIncluded,
+        totalPrice,
+        totalPriceV2,
+        totalTax,
+        totalTaxV2,
+        webUrl,
+    } = checkout;
+});
+
+const lineItems: ShopifyBuy.CheckoutLineItemInput[] = [];
+client.checkout.replaceLineItems('123', lineItems).then(checkout => {
+    const {
+        id,
+        appliedGiftCards,
+        orderStatusUrl,
+        updatedAt,
+        completedAt,
+        createdAt,
+        currencyCode,
+        customAttributes,
+        discountApplications,
+        email,
+        lineItems,
+        lineItemsSubtotalPrice,
+        note,
+        order,
+        paymentDue,
+        paymentDueV2,
+        ready,
+        requiresShipping,
+        shippingAddress,
+        shippingLine,
+        taxExempt,
+        taxesIncluded,
+        totalPrice,
+        totalPriceV2,
+        totalTax,
+        totalTaxV2,
+        webUrl,
+    } = checkout;
+});
+
+client.checkout
+    .updateAttributes('123', { allowPartialAddresses: true, note: 'hello', customAttributes: [] })
+    .then(checkout => {
+        const {
+            id,
+            appliedGiftCards,
+            orderStatusUrl,
+            updatedAt,
+            completedAt,
+            createdAt,
+            currencyCode,
+            customAttributes,
+            discountApplications,
+            email,
+            lineItems,
+            lineItemsSubtotalPrice,
+            note,
+            order,
+            paymentDue,
+            paymentDueV2,
+            ready,
+            requiresShipping,
+            shippingAddress,
+            shippingLine,
+            taxExempt,
+            taxesIncluded,
+            totalPrice,
+            totalPriceV2,
+            totalTax,
+            totalTaxV2,
+            webUrl,
+        } = checkout;
+    });
+
+client.checkout.updateEmail('123', 'me@example.com').then(checkout => {
+    const {
+        id,
+        appliedGiftCards,
+        orderStatusUrl,
+        updatedAt,
+        completedAt,
+        createdAt,
+        currencyCode,
+        customAttributes,
+        discountApplications,
+        email,
+        lineItems,
+        lineItemsSubtotalPrice,
+        note,
+        order,
+        paymentDue,
+        paymentDueV2,
+        ready,
+        requiresShipping,
+        shippingAddress,
+        shippingLine,
+        taxExempt,
+        taxesIncluded,
+        totalPrice,
+        totalPriceV2,
+        totalTax,
+        totalTaxV2,
+        webUrl,
+    } = checkout;
+});
+
+client.checkout.updateLineItems('123', lineItems).then(checkout => {
+    const {
+        id,
+        appliedGiftCards,
+        orderStatusUrl,
+        updatedAt,
+        completedAt,
+        createdAt,
+        currencyCode,
+        customAttributes,
+        discountApplications,
+        email,
+        lineItems,
+        lineItemsSubtotalPrice,
+        note,
+        order,
+        paymentDue,
+        paymentDueV2,
+        ready,
+        requiresShipping,
+        shippingAddress,
+        shippingLine,
+        taxExempt,
+        taxesIncluded,
+        totalPrice,
+        totalPriceV2,
+        totalTax,
+        totalTaxV2,
+        webUrl,
+    } = checkout;
+});
+
+const shippingAddress: ShopifyBuy.MailingAddress = {
+    address1: '123 Cat Road',
+    address2: null,
+    city: 'Cat Land',
+    company: 'Catmart',
+    country: 'Canada',
+    firstName: 'Meow',
+    formatted: ['Catmart', '123 Cat Road', 'Cat Land ON M3O 0W1', 'Canada'],
+    lastName: 'Meowington',
+    latitude: null,
+    longitude: null,
+    phone: '4161234566',
+    province: 'Ontario',
+    zip: 'M3O 0W1',
+    name: 'Meow Meowington',
+    countryCode: ShopifyBuy.CountryCode.US,
+    provinceCode: 'ON',
+    id: 'Z2lkOi8vc2hvcGlmeSsiujh8aQJbnkl9Qcm9kdWN0VmaJKN8flqAnq8TEwNjA2NDU4NA==',
+};
+client.checkout.updateShippingAddress('123', shippingAddress).then(checkout => {
+    const {
+        id,
+        appliedGiftCards,
+        orderStatusUrl,
+        updatedAt,
+        completedAt,
+        createdAt,
+        currencyCode,
+        customAttributes,
+        discountApplications,
+        email,
+        lineItems,
+        lineItemsSubtotalPrice,
+        note,
+        order,
+        paymentDue,
+        paymentDueV2,
+        ready,
+        requiresShipping,
+        shippingAddress,
+        shippingLine,
+        taxExempt,
+        taxesIncluded,
+        totalPrice,
+        totalPriceV2,
+        totalTax,
+        totalTaxV2,
+        webUrl,
+    } = checkout;
+});
+//#endregion Checkout Methods

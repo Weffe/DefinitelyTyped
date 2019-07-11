@@ -281,19 +281,13 @@ declare namespace ShopifyBuy {
         /**
          * List of images associated with the product.
          */
-        images: ImageConnection;
+        images: Pick<Image, 'id' | 'src' | 'altText'>;
 
         /**
          * List of collections a product belongs to.
          */
-        variants: ProductVariantConnection;
+        variants: ProductVariant;
     }
-
-    type ImageConnectionEdge = EdgeWithCursor<Pick<Image, 'id' | 'src' | 'altText'>>;
-    export interface ImageConnection extends BaseConnection<ImageConnectionEdge> {}
-
-    type ProductVariantConnectionEdge = EdgeWithCursor<ProductVariant>;
-    export interface ProductVariantConnection extends BaseConnection<ProductVariantConnectionEdge> {}
 
     /**
      * @see https://help.shopify.com/en/api/storefront-api/reference/object/productvariant
@@ -312,7 +306,7 @@ declare namespace ShopifyBuy {
         /**
          * List of prices and compare-at prices in the presentment currencies for this shop.
          */
-        presentmentPrices: ProductVariantPricePairConnection;
+        presentmentPrices: ProductVariantPricePair;
 
         /**
          * The weight of the product variant in the unit system specified with weightUnit.
@@ -345,9 +339,6 @@ declare namespace ShopifyBuy {
          */
         selectedOptions: SelectedOption[];
     }
-
-    type ProductVariantPricePairConnectionEdge = Edge<ProductVariantPricePair>;
-    export interface ProductVariantPricePairConnection extends BaseConnection<ProductVariantPricePairConnectionEdge> {}
 
     /**
      * @see https://help.shopify.com/en/api/storefront-api/reference/object/productvariantpricepair
@@ -834,7 +825,7 @@ declare namespace ShopifyBuy {
         /**
          * Discounts that have been applied on the checkout.
          */
-        discountApplications: DiscountApplicationConnection;
+        discountApplications: DiscountApplication;
 
         /**
          * List of applied gift cards on the checkout
@@ -861,11 +852,8 @@ declare namespace ShopifyBuy {
         /**
          * A list of line item objects, each one containing information about an item in the checkout.
          */
-        lineItems: CheckoutLineItemConnection;
+        lineItems: CheckoutLineItem;
     }
-
-    type DiscountApplicationConnectionEdge = Edge<DiscountApplication>;
-    export interface DiscountApplicationConnection extends BaseConnection<DiscountApplicationConnectionEdge> {}
 
     /**
      * @see https://help.shopify.com/en/api/storefront-api/reference/interface/discountapplication
@@ -1167,11 +1155,8 @@ declare namespace ShopifyBuy {
         /**
          * List of the order’s line items.
          */
-        lineItems: OrderLineItemConnection;
+        lineItems: OrderLineItem;
     }
-
-    type OrderLineItemConnectionEdge = EdgeWithCursor<OrderLineItem>;
-    interface OrderLineItemConnection extends BaseConnection<OrderLineItemConnectionEdge> {}
 
     /**
      * @see https://help.shopify.com/en/api/storefront-api/reference/object/orderlineitem
@@ -1218,9 +1203,6 @@ declare namespace ShopifyBuy {
         allocatedAmount: MoneyV2;
         discountApplication: DiscountApplication;
     }
-
-    type CheckoutLineItemConnectionEdge = EdgeWithCursor<CheckoutLineItem>;
-    interface CheckoutLineItemConnection extends BaseConnection<CheckoutLineItemConnectionEdge> {}
 
     /**
      * @see https://help.shopify.com/en/api/storefront-api/reference/object/checkoutlineitem
@@ -1480,42 +1462,11 @@ declare namespace ShopifyBuy {
         reverse?: boolean;
     }
 
-    /**
-     * this is a generic connection interface that's used by others like ImageConnection
-     */
-    interface BaseConnection<E> {
-        edges: Array<E>;
-        pageInfo: PageInfo;
-    }
-
     interface Node {
         /**
          * Globally unique identifier.
          */
         id: string;
-    }
-
-    // used for Connection Types
-    interface Edge<U> {
-        node: U;
-    }
-
-    // used for Connection Types
-    interface EdgeWithCursor<K> extends Edge<K> {
-        cursor: string;
-    }
-
-    // used for Connection Types
-    export interface PageInfo {
-        /**
-         * Indicates if there are more pages to fetch.
-         */
-        hasNextPage: boolean;
-
-        /**
-         * Indicates if there are any pages prior to the current page.
-         */
-        hasPreviousPage: boolean;
     }
 
     export enum CurrencyCode {

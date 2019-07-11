@@ -135,7 +135,7 @@ declare namespace ShopifyBuy {
          *   // Do something with the first 10 products sorted by title in ascending order
          * });
          */
-        fetchQuery(query: Query): Promise<Product[]>;
+        fetchQuery(query: ProductQuery): Promise<Product[]>;
 
         helpers: ProductHelpers;
     }

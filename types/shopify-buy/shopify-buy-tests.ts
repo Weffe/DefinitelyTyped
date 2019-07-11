@@ -52,19 +52,11 @@ client.product.fetch('123').then(product => {
         }
     }
 
-    const hasNextPage = images.pageInfo.hasNextPage;
-    const hasPreviousPage = images.pageInfo.hasPreviousPage;
-
-    images.edges.forEach(image => {
-        const cursor = image.cursor;
-        const { altText, id, src } = image.node;
+    images.forEach(image => {
+        const { altText, id, src } = image;
     });
 
-    const a = variants.pageInfo.hasNextPage;
-    const b = variants.pageInfo.hasPreviousPage;
-
-    variants.edges.forEach(variant => {
-        const cursor = variant.cursor;
+    variants.forEach(variant => {
         const {
             available,
             compareAtPrice,
@@ -76,7 +68,7 @@ client.product.fetch('123').then(product => {
             sku,
             title,
             weight,
-        } = variant.node;
+        } = variant;
     });
 });
 
@@ -180,9 +172,9 @@ client.product.fetch('123').then(product => {
 
     const { title, price, presentmentPrices, weight, sku, available, compareAtPrice, image, selectedOptions } = variant;
 
-    presentmentPrices.edges.forEach(edge => {
-        const amount = edge.node.price.amount;
-        const currencyCode = edge.node.price.currencyCode;
+    presentmentPrices.forEach(presentmentPrice => {
+        const amount = presentmentPrice.price.amount;
+        const currencyCode = presentmentPrice.price.currencyCode;
     });
 });
 //#endregion Product Methods
@@ -270,12 +262,9 @@ client.collection.fetchAllWithProducts().then(collections => {
                 values.map(v => v.charAt(1));
             });
 
-            images.edges.forEach(edge => {
-                const { cursor, node } = edge;
+            images.forEach(img => {
 
-                cursor.charAt(1);
-
-                const { altText, id, src } = node;
+                const { altText, id, src } = img;
 
                 if (altText) {
                     altText.charAt(1);
@@ -288,10 +277,8 @@ client.collection.fetchAllWithProducts().then(collections => {
                 src.charAt(2);
             });
 
-            variants.edges.forEach(edge => {
-                const { cursor, node } = edge;
+            variants.forEach(variant => {
 
-                cursor.charAt(1);
 
                 const {
                     available,
@@ -304,14 +291,14 @@ client.collection.fetchAllWithProducts().then(collections => {
                     image,
                     presentmentPrices,
                     price,
-                } = node;
+                } = variant;
 
                 selectedOptions.forEach(opt => {
                     const { name, value } = opt;
                 });
 
-                presentmentPrices.edges.forEach(edge => {
-                    const { price } = edge.node;
+                presentmentPrices.forEach(presentmentPrice => {
+                    const { price } = presentmentPrice;
                     const { amount, currencyCode } = price;
 
                     const foo = currencyCode === ShopifyBuy.CurrencyCode.BZD;
@@ -407,12 +394,9 @@ client.collection.fetchWithProducts('123').then(collection => {
             values.map(v => v.charAt(1));
         });
 
-        images.edges.forEach(edge => {
-            const { cursor, node } = edge;
+        images.forEach(image => {
 
-            cursor.charAt(1);
-
-            const { altText, id, src } = node;
+            const { altText, id, src } = image;
 
             if (altText) {
                 altText.charAt(1);
@@ -425,10 +409,7 @@ client.collection.fetchWithProducts('123').then(collection => {
             src.charAt(2);
         });
 
-        variants.edges.forEach(edge => {
-            const { cursor, node } = edge;
-
-            cursor.charAt(1);
+        variants.forEach(variant => {
 
             const {
                 available,
@@ -441,14 +422,14 @@ client.collection.fetchWithProducts('123').then(collection => {
                 image,
                 presentmentPrices,
                 price,
-            } = node;
+            } = variant;
 
             selectedOptions.forEach(opt => {
                 const { name, value } = opt;
             });
 
-            presentmentPrices.edges.forEach(edge => {
-                const { price } = edge.node;
+            presentmentPrices.forEach(presentmentPrices => {
+                const { price } = presentmentPrices;
                 const { amount, currencyCode } = price;
 
                 const foo = currencyCode === ShopifyBuy.CurrencyCode.BZD;
@@ -462,7 +443,7 @@ client.collection.fetchWithProducts('123').then(collection => {
 //-------------------------------
 // testing ImageHelpers
 client.product.fetch('123').then(product => {
-    const img = product.variants.edges[0].node.image;
+    const img = product.variants[0].image;
 
     if (img) {
         const newImgSrc: string = client.image.helpers.imageForSize(img, { maxWidth: 50, maxHeight: 50 });
@@ -561,10 +542,8 @@ client.checkout.addDiscount('123', '15off').then(checkout => {
         const { key, value } = attr;
     });
 
-    const { hasNextPage, hasPreviousPage } = discountApplications.pageInfo;
-
-    discountApplications.edges.forEach(edge => {
-        const { title, description, allocationMethod, applicable, code, targetSelection, targetType } = edge.node;
+    discountApplications.forEach(discountApplication => {
+        const { title, description, allocationMethod, applicable, code, targetSelection, targetType } = discountApplication;
 
         if (title) {
             title.charAt(1);
@@ -583,10 +562,9 @@ client.checkout.addDiscount('123', '15off').then(checkout => {
         const z = targetType === ShopifyBuy.DiscountApplicationTargetType.SHIPPING_LINE;
     });
 
-    lineItems.edges.forEach(edge => {
-        const { cursor, node } = edge;
+    lineItems.forEach(lineItems => {
 
-        const { id, customAttributes, discountAllocations, quantity, title, variant } = node;
+        const { id, customAttributes, discountAllocations, quantity, title, variant } = lineItems;
 
         customAttributes.forEach(attr => {
             const { key, value } = attr;
@@ -634,9 +612,8 @@ client.checkout.addDiscount('123', '15off').then(checkout => {
             totalShippingPriceV2,
         } = order;
 
-        lineItems.edges.forEach(edge => {
-            const { cursor, node } = edge;
-            const { variant, title, quantity, discountAllocations, customAttributes } = node;
+        lineItems.forEach(lineItem => {
+            const { variant, title, quantity, discountAllocations, customAttributes } = lineItem;
         });
     }
 
